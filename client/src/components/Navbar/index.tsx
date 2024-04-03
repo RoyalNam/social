@@ -84,7 +84,7 @@ const Navbar = () => {
         },
         {
             tit: 'Profile',
-            to: '/profile/demo',
+            to: '/profile/me',
             icon: <BsPersonCircle />,
             actIcon: <BsPersonCircle />,
         },
@@ -129,7 +129,7 @@ const Navbar = () => {
     );
     return (
         <div
-            className={`relative lg:w-60 w-full md:w-16 p-2 flex md:block border-b md:border-r border-black/30 dark:border-white/10 ${
+            className={`relative lg:w-60 w-full md:w-16 p-2 flex flex-col md:block border-b md:border-r border-black/30 dark:border-white/10 ${
                 isShowSearch || isShowNotifications ? 'md:!w-16 !w-full' : ''
             }`}
         >
@@ -152,6 +152,7 @@ const Navbar = () => {
             <div className="flex-1 flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
+            <div className="hidden md:block">Setting</div>
             {isShowSearch && (
                 <RenderSidebar>
                     <Search />
@@ -162,7 +163,7 @@ const Navbar = () => {
                     <Notifications />
                 </RenderSidebar>
             )}
-            <CreatePost show={isShowCreatePost} setShow={() => setShowCreatePost(false)} />
+            <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />
         </div>
     );
 };
