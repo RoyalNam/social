@@ -9,10 +9,16 @@ import { STORIES_DATA } from '@/test/stories';
 import RenderPost from '@/components/Post';
 import Slider from 'react-slick';
 import Modal from '@/components/Modal';
+import CreatePost from '@/components/CreatePost';
+import { BsPlus } from 'react-icons/bs';
+import { useRouter } from 'next/navigation';
+import SummaryAPI from '@/api';
 
 const Home = () => {
+    const router = useRouter();
     const [postsData, setPosts] = useState<Post[]>([]);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
     useEffect(() => {
         const fetchData = async () => {
             setPosts(POSTS_DATA);
@@ -20,9 +26,15 @@ const Home = () => {
 
         fetchData();
     }, []);
-
+    const handleLogin = () => {
+        return router.push(SummaryAPI.accounts.google.url);
+    };
     return (
         <MainLayout>
+            <button className="bg-red-500 p-4" onClick={handleLogin}>
+                LogIn
+            </button>
+
             <Stories />
             <div className="max-w-[472px] w-full">
                 {postsData.map((item) => (
@@ -31,7 +43,6 @@ const Home = () => {
                     </div>
                 ))}
             </div>
-
             {selectedPost && <PostDetail post={selectedPost} closePostDetail={() => setSelectedPost(null)} />}
         </MainLayout>
     );
@@ -45,6 +56,7 @@ const Stories = () => {
     const [slidesToShow, setSlidesToShow] = useState(0);
     const [oldSlide, setOldSlide] = useState(0);
     const [activeSlide, setActiveSlide] = useState(0);
+    const [isShowCreatePost, setShowCreatePost] = useState(false);
 
     useEffect(() => {
         const sliderElement = sliderRef.current;
@@ -125,13 +137,26 @@ const Stories = () => {
     return (
         <>
             <div ref={sliderRef}>
-                <Slider {...settings}>{STORIES_DATA.map((story) => renderStory({ story: story }))}</Slider>
+                <Slider {...settings}>
+                    <div>
+                        <button
+                            title="Create"
+                            className="w-20 h-20 cursor-pointer border-2 dark:border-white border-black rounded-full flex items-center justify-center"
+                            onClick={() => setShowCreatePost(true)}
+                        >
+                            <BsPlus className="text-5xl" />
+                        </button>
+                    </div>
+                    {STORIES_DATA.map((story) => renderStory({ story: story }))}
+                </Slider>
             </div>
-            <Modal onClose={() => {}} show={true}>
+            <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />
+
+            {/* <Modal onClose={() => {}} show={true}>
                 <div key={1} className="z-50 h-[calc(100vh-64px)]">
                     <img src={STORIES_DATA[8].story_url} alt="" className="w-auto h-full" />
                 </div>
-            </Modal>
+            </Modal> */}
         </>
     );
 };

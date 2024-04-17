@@ -42,27 +42,29 @@ const PostDetail = ({ post, closePostDetail }: { post: Post; closePostDetail: ()
             )
         );
     };
+
     return (
         <Modal show={post != null} onClose={closePostDetail}>
-            <div className="z-40 bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
-                <div className="flex-1 flex items-center justify-center relative">
+            <div className="z-40 relative bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
+                <div className="hidden md:flex flex-1 items-center border-r">
                     <img
                         src={post.media_url}
                         alt=""
                         loading="lazy"
                         className="max-w-full max-h-full w-full h-auto object-cover"
                     />
-                    <button
-                        title="Close"
-                        className="text-xl absolute right-3 top-3 cursor-pointer bg-white/10 hover:bg-white/15 rounded-full"
-                        onClick={closePostDetail}
-                    >
-                        <BsX className="text-4xl" />
-                    </button>
                 </div>
-                <div className="w-[400px] h-full border-l py-3 px-4 flex flex-col">
+                <div className="w-full md:w-[400px] h-full pt-5 pb-3 px-4 flex flex-col">
                     <RenderPost post={post} setSelectedPost={() => {}} isShowImg={false} />
-                    <div className="border-b border-black/30 dark:border-white/20 py-4 my-3 flex-1 overflow-y-auto">
+                    <div className="md:hidden flex items-center -mx-4">
+                        <img
+                            src={post.media_url}
+                            alt=""
+                            loading="lazy"
+                            className="max-w-full max-h-full w-full h-auto object-cover"
+                        />
+                    </div>
+                    <div className="border-b border-black/30 dark:border-white/20 py-4 my-3 flex-1 scroll_thin overflow-y-auto">
                         <div className="flex flex-col gap-4">
                             {getCommentsFromPostId(post.post_id).map((item) => renderComment(item))}
                         </div>
@@ -76,6 +78,13 @@ const PostDetail = ({ post, closePostDetail }: { post: Post; closePostDetail: ()
                         />
                     </div>
                 </div>
+                <button
+                    title="Close"
+                    className="text-xl absolute right-1 top-1 cursor-pointer bg-white/10 hover:bg-white/15 rounded-full"
+                    onClick={closePostDetail}
+                >
+                    <BsX className="text-4xl" />
+                </button>
             </div>
         </Modal>
     );

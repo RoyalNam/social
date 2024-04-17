@@ -149,7 +149,7 @@ const Navbar = () => {
                     }`}
                 />
             </Link>
-            <div className="flex-1 flex flex-row justify-around md:flex-col gap-0 md:gap-2">
+            <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
             <div className="hidden md:block">Setting</div>

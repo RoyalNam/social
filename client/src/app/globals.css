@@ -27,6 +27,7 @@ body {
 }
 .custom-range {
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     height: 2px;
     background: #d3d3d3;
@@ -55,3 +56,20 @@ body {
     background: rgb(96 165 250);
     cursor: pointer;
 }
+
+/* Scrollbar */
+.scroll_thin {
+    scrollbar-width: thin;
+}
+
+/* .scroll_custom::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+.scroll_custom::-webkit-scrollbar-thumb {
+    background: #333333;
+}
+
+.scroll_custom::-webkit-scrollbar-thumb:hover {
+    background: #555555;
+} */
