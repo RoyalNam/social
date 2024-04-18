@@ -1,10 +1,11 @@
 import Navbar from '@/components/Navbar';
+import { useAuthContextProvider } from '@/context/user';
 
-export default function MainLayout({
+const MainLayout = ({
     children,
 }: Readonly<{
     children: React.ReactNode;
-}>) {
+}>) => {
     return (
         <div className="flex h-screen flex-col md:flex-row">
             <Navbar />
@@ -13,4 +14,6 @@ export default function MainLayout({
             </main>
         </div>
     );
-}
+};
+
+export default MainLayout;

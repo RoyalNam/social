@@ -1,5 +1,5 @@
 'use client';
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
     BsBookmark,
@@ -15,11 +15,11 @@ import {
     BsThreeDots,
 } from 'react-icons/bs';
 import { formatNumber } from '@/utils';
-import { Post, User } from '@/types';
-import { USERS_DATA } from '@/test/users';
-import { POSTS_DATA } from '@/test/posts';
 import PostDetail from '@/components/PostDetail';
 import CreatePost from '@/components/CreatePost';
+import { useAuthContextProvider } from '@/context/user';
+import { MinimalUser, Post, User } from '@/types';
+import axios from 'axios';
 
 interface TabProps {
     icon: React.ReactNode;
@@ -28,31 +28,25 @@ interface TabProps {
 }
 
 const Profile = () => {
-    const { username } = useParams();
+    const { userId } = useParams();
+    const userAuth = useAuthContextProvider();
     const [tab, setTab] = useState('Posts');
     const [isShowCreatePost, setShowCreatePost] = useState(false);
-    const [userData, setUser] = useState<User>();
+    const [user, setUser] = useState<User | null>();
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-    const [postsData, setPosts] = useState<Post[]>([]);
-
     useEffect(() => {
-        const fetchData = () => {
-            if (username === 'me') {
-                const user = USERS_DATA[3];
-                setUser(user);
-                const posts = POSTS_DATA.filter((item) => item.user_id === user.user_id);
-                setPosts(posts);
+        const fetchData = async () => {
+            if (userId == userAuth?._id) {
+                setUser(userAuth);
             } else {
-                const user = USERS_DATA.find((item) => item.username == username);
-                if (user) {
-                    setUser(user);
-                    const posts = POSTS_DATA.filter((item) => item.user_id === user.user_id);
-                    setPosts(posts);
-                }
+                const userRes = await axios.get('http://localhost:3000/api/users?filter=username&value=john_doe121111');
+                console.log('user', userRes);
+
+                if (userRes) setUser(userRes.data[0]);
             }
         };
         fetchData();
-    }, [username]);
+    }, [userId, userAuth]);
 
     const renderTap = (tabItem: TabProps) => (
         <button
@@ -72,6 +66,14 @@ const Profile = () => {
             <span>{tit}</span>
         </li>
     );
+    const getMinimalUser = () => {
+        if (user)
+            return {
+                _id: user._id,
+                name: user.name,
+                avatar: user.avatar,
+            };
+    };
     const TABS = [
         {
             icon: <BsCamera />,
@@ -107,25 +109,20 @@ const Profile = () => {
     const handleCreate = () => setShowCreatePost(true);
 
     return (
-        userData && (
+        user && (
             <div>
                 <div className="flex gap-8 border-b border-white/20 flex-col md:flex-row">
-                    <img src={userData.avatar} alt="" className="hidden md:block w-36 h-36 rounded-full" />
+                    <img src={user.avatar} alt="" className="hidden md:block w-36 h-36 rounded-full" />
                     <div className="flex-1">
                         <div>
                             <div className="flex gap-3 justify-between">
                                 <div className="flex gap-3">
-                                    <img
-                                        src={userData.avatar}
-                                        alt=""
-                                        className="block md:hidden w-12 h-12 rounded-full"
-                                    />
+                                    <img src={user.avatar} alt="" className="block md:hidden w-12 h-12 rounded-full" />
                                     <div>
-                                        <h5>{userData.name}</h5>
-                                        <h4 className="text-sm cursor-pointer hover:underline">@{userData.username}</h4>
+                                        <h5>{user.name}</h5>
                                     </div>
                                 </div>
-                                {username != 'me' && (
+                                {userId != userAuth?._id && (
                                     <div className="flex gap-4 items-center text-sm">
                                         <button className="bg-white text-pink-500 px-5 py-2 font-semibold rounded-md">
                                             Follow
@@ -139,14 +136,14 @@ const Profile = () => {
                                     </div>
                                 )}
                             </div>
-                            <pre className="text-sm my-2">{userData.bio}</pre>
+                            <pre className="text-sm my-2">{user.bio}</pre>
                         </div>
-                        <ul className="flex gap-6 md:justify-start justify-around my-8">
-                            {renderInfo('posts', userData.post_count)}
-                            {renderInfo('following', userData.following_count)}
-                            {renderInfo('follower', userData.follower_count)}
+                        <ul className="flex gap-6 md:justify-start justify-around my-4">
+                            {renderInfo('posts', user.posts.length)}
+                            {renderInfo('following', user.following.length)}
+                            {renderInfo('follower', user.followers.length)}
                         </ul>
-                        {username === 'me' && (
+                        {userId === userAuth?._id && (
                             <div className="flex mb-8">
                                 <div className="text-center flex flex-col gap-1 cursor-pointer" onClick={handleCreate}>
                                     <span className="p-1 border rounded-full text-black/30 dark:text-white/30">
@@ -161,7 +158,7 @@ const Profile = () => {
                 <div>
                     <div className="flex justify-center">{TABS.map((item) => renderTap(item))}</div>
                     {tab == 'Posts' &&
-                        (postsData.length == 0 ? (
+                        (user.posts.length === 0 ? (
                             <div className="text-center mb-8">
                                 {renderEmptyInfoTab(
                                     <BsCamera />,
@@ -176,14 +173,14 @@ const Profile = () => {
                         ) : (
                             <div className="">
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
-                                    {postsData.map((item) => (
+                                    {user.posts.map((item) => (
                                         <div
-                                            key={item.post_id}
+                                            key={item._id}
                                             className="relative group cursor-pointer"
                                             onClick={() => setSelectedPost(item)}
                                         >
                                             <img
-                                                src={item.media_url}
+                                                src={item.image_url}
                                                 alt=""
                                                 loading="lazy"
                                                 className="aspect-square object-cover"
@@ -191,11 +188,11 @@ const Profile = () => {
                                             <div className="absolute inset-0 hidden group-hover:flex items-center justify-center gap-3 bg-black/30 font-semibold">
                                                 <div className="flex items-center gap-1">
                                                     <BsHeartFill />
-                                                    <span>{formatNumber(item.like_count)}</span>
+                                                    <span>{formatNumber(item.likes.length)}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <BsChatDotsFill />
-                                                    <span>{formatNumber(item.comment_count)}</span>
+                                                    <span>{formatNumber(item.comments.length)}</span>
                                                 </div>
                                             </div>
                                             {/* {item.media_type == 'image' && (
@@ -227,7 +224,13 @@ const Profile = () => {
                         </div>
                     )}
                 </div>
-                {selectedPost && <PostDetail post={selectedPost} closePostDetail={() => setSelectedPost(null)} />}
+                {selectedPost && (
+                    <PostDetail
+                        post={selectedPost}
+                        minimalUser={getMinimalUser() as MinimalUser}
+                        closePostDetail={() => setSelectedPost(null)}
+                    />
+                )}
                 <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />
             </div>
         )

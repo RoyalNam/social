@@ -7,7 +7,6 @@ const Register = () => {
     const router = useRouter();
     const initialData = {
         fullName: '',
-        username: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -27,12 +26,7 @@ const Register = () => {
                     fullName: validateFullName(value),
                 }));
                 break;
-            case 'username':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    username: validateUsername(value),
-                }));
-                break;
+
             case 'email':
                 setInputErrors((prevErrors) => ({
                     ...prevErrors,
@@ -64,12 +58,6 @@ const Register = () => {
         return '';
     };
 
-    const validateUsername = (value: string) => {
-        const regex = /[^\w\s]/;
-        if (regex.test(value)) return 'Usernames cannot contain special characters or spaces.';
-        return '';
-    };
-
     const validateEmail = (value: string) => {
         return '';
     };
@@ -88,12 +76,6 @@ const Register = () => {
                 setInputErrors((prevErrors) => ({
                     ...prevErrors,
                     fullName: value.length < 8 ? 'FullName must be at least 8 characters long' : '',
-                }));
-                break;
-            case 'username':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    username: value.length < 8 ? 'Username must be at least 8 characters long' : '',
                 }));
                 break;
             case 'password':
@@ -121,13 +103,6 @@ const Register = () => {
             err: inputErrors.fullName,
             onChange: (value) => handleInputChange('fullName', value),
             onBlur: () => handleBlur('fullName', formData.fullName),
-        },
-        {
-            placeholder: 'Username',
-            value: formData.username,
-            err: inputErrors.username,
-            onChange: (value) => handleInputChange('username', value),
-            onBlur: () => handleBlur('username', formData.username),
         },
         {
             type: 'email',

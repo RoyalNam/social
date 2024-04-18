@@ -1,8 +1,8 @@
 import passport from 'passport';
+import dotenv from 'dotenv';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
-import { Strategy } from 'passport';
-import dotenv from 'dotenv';
+import { Strategy as LocalStrategy } from 'passport-local';
 import { comparePassword } from '../utils/helpers.mjs';
 import { User } from '../mongoose/schemas/user.mjs';
 dotenv.config();
@@ -34,6 +34,7 @@ passport.use(
                         },
                     });
                     await newUser.save();
+                    cb(null, newUser);
                 } else {
                     console.log('Google User already exists in DB..');
                     cb(null, user);
@@ -52,7 +53,7 @@ passport.use(
             clientID: process.env.FACEBOOK_CLIENT_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
             callbackURL: '/auth/facebook/callback',
-            scope: ['profile', 'email'],
+            scope: ['email'],
         },
         async function (accessToken, refreshToken, profile, cb) {
             try {
@@ -75,7 +76,6 @@ passport.use(
                     cb(null, newUser);
                 } else {
                     console.log('Facebook User already exists in DB..');
-                    // Serialize only the user ID into the session
                     cb(null, user);
                 }
             } catch (error) {
@@ -87,15 +87,17 @@ passport.use(
 
 passport.use(
     'local',
-    new Strategy(async (username, password, done) => {
+    new LocalStrategy(async (email, password, done) => {
         try {
-            const findUser = await User.findOne({ username });
+            const findUser = await User.findOne({ email });
             if (!findUser) throw new Error('User not found');
             if (!comparePassword(password, findUser.password)) throw new Error('Bad Credentials');
             done(null, findUser);
         } catch (err) {
+            console.log('nyk');
             done(err, null);
         }
+        console.log('nyk');
     }),
 );
 

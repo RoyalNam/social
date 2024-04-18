@@ -1,11 +1,11 @@
+import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 // Define Schema for User
 const userSchema = new Schema({
-    username: { type: String, unique: true },
+    email: { type: String, unique: true },
     name: { type: String },
-    email: { type: String },
     avatar: { type: String },
     account: {
         type: {
@@ -21,13 +21,13 @@ const userSchema = new Schema({
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     posts: [
         {
-            _id: Schema.Types.ObjectId,
+            _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
             image_url: { type: String },
             caption: { type: String },
             post_date: { type: Date, default: Date.now },
             comments: [
                 {
-                    _id: Schema.Types.ObjectId,
+                    _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
                     user: { type: Schema.Types.ObjectId, ref: 'User' },
                     comment_text: { type: String },
                     replies: [{ type: Schema.Types.ObjectId, ref: 'Reply' }],
@@ -52,9 +52,17 @@ const tagSchema = new Schema({
     name: { type: String, unique: true },
 });
 
+const replySchema = new Schema({
+    _id: Schema.Types.ObjectId,
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    reply_text: { type: String },
+    replies: [{ type: Schema.Types.ObjectId, ref: 'Reply' }],
+});
+
 //Define model
 const User = mongoose.model('User', userSchema);
 const Tag = mongoose.model('Tag', tagSchema);
+const Reply = mongoose.model('Reply', replySchema);
 
 //Export
 export { User, Tag };

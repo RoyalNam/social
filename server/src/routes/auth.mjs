@@ -9,6 +9,11 @@ router.get('/login/success', (req, res) => {
             message: 'successfully',
             user: req.user,
         });
+    } else {
+        res.status(401).json({
+            success: false,
+            message: 'Unauthorized',
+        });
     }
 });
 router.get('/login/failed', (req, res) => {
@@ -20,23 +25,29 @@ router.get('/login/failed', (req, res) => {
 router.get('/logout', (req, res) => {
     req.logout(), res.redirect(process.env.CLIENT_URL);
 });
-
+router.post(
+    '/local',
+    passport.authenticate('local', {
+        successRedirect: process.env.CLIENT_URL,
+        failureRedirect: '/auth/login/failed',
+    }),
+);
 router.get('/google', passport.authenticate('google'));
 router.get(
     '/google/callback',
     passport.authenticate('google', {
         successRedirect: process.env.CLIENT_URL,
-        failureRedirect: '/login/failed',
+        failureRedirect: '/auth/login/failed',
     }),
 );
 
 router.get('/facebook', passport.authenticate('facebook'));
 
 router.get(
-    '/facebook/redirect',
+    '/facebook/callback',
     passport.authenticate('facebook', {
         successRedirect: process.env.CLIENT_URL,
-        failureRedirect: '/login/failed',
+        failureRedirect: '/auth/login/failed',
     }),
 );
 

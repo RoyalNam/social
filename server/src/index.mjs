@@ -7,17 +7,11 @@ import mongoose from 'mongoose';
 import MongoStore from 'connect-mongo';
 import './config/passport.mjs';
 import authRoute from './routes/auth.mjs';
+import userRouter from './routes/users.mjs';
 import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-app.use(
-    cors({
-        origin: process.env.CLIENT_URL,
-        methods: 'GET,POST,PUT,DELETE',
-        credentials: true,
-    }),
-);
 
 mongoose
     .connect('mongodb://localhost/MXH')
@@ -39,11 +33,21 @@ app.use(
         }),
     }),
 );
+app.use(
+    cors({
+        origin: 'http://localhost:3001',
+        methods: 'GET,POST,PUT,DELETE',
+        // allowedHeaders: '*',
+        exposedHeaders: ['Access-Control-Allow-Credentials'],
+        credentials: true,
+    }),
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/auth', authRoute);
+app.use(userRouter);
 
 const port = process.env.PORT || 3000;
 

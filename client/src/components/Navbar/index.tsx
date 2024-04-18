@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
     BsBell,
     BsBellFill,
@@ -20,6 +19,7 @@ import {
 import Search from './Search';
 import Notifications from './Notifications';
 import CreatePost from '../CreatePost';
+import { useAuthContextProvider } from '@/context/user';
 
 interface NavProps {
     tit: string;
@@ -32,6 +32,7 @@ interface NavProps {
 const Navbar = () => {
     const pathname = usePathname();
     const router = useRouter();
+    const user = useAuthContextProvider();
     const [isShowSearch, setShowSearch] = useState(false);
     const [isShowNotifications, setShowNotifications] = useState(false);
     const [isShowCreatePost, setShowCreatePost] = useState(false);
@@ -84,11 +85,12 @@ const Navbar = () => {
         },
         {
             tit: 'Profile',
-            to: '/profile/me',
-            icon: <BsPersonCircle />,
-            actIcon: <BsPersonCircle />,
+            to: `/profile/${user?._id}`,
+            icon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full w-6 h-6" />,
+            actIcon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full w-6 h-6" />,
         },
     ];
+
     const handleCloseSidebar = () => {
         if (isShowNotifications) setShowNotifications(false);
         if (isShowSearch) setShowSearch(false);
@@ -112,9 +114,9 @@ const Navbar = () => {
                 className="flex gap-2 items-center px-3 py-1 md:py-3 rounded-xl hover:bg-transparent md:hover:bg-black/10 dark:md:hover:bg-white/10"
             >
                 <span className="text-2xl">{isAct ? item.actIcon : item.icon}</span>
-                <h4 className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
+                <span className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
                     {item.tit}
-                </h4>
+                </span>
             </button>
         );
     };
@@ -133,7 +135,13 @@ const Navbar = () => {
                 isShowSearch || isShowNotifications ? 'md:!w-16 !w-full' : ''
             }`}
         >
-            <Link href={'/'} onClick={handleCloseSidebar} className="hidden md:block mb-6 py-2">
+            <div
+                onClick={() => {
+                    handleCloseSidebar();
+                    router.push('/');
+                }}
+                className="hidden md:block mb-6 py-2"
+            >
                 <h2
                     className={`hidden lg:block font-mono py-2 italic text-2xl px-3 ${
                         isShowSearch || isShowNotifications ? '!hidden' : ''
@@ -148,7 +156,7 @@ const Navbar = () => {
                         isShowSearch || isShowNotifications ? '!block' : ''
                     }`}
                 />
-            </Link>
+            </div>
             <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>

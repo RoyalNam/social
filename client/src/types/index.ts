@@ -1,35 +1,53 @@
-export interface Post {
-    post_id: number;
-    user_id: number;
-    caption: string;
-    post_date: Date;
-    media_url: string;
-    like_count: number;
-    comment_count: number;
-}
-export interface Story {
-    story_id: number;
-    user_id: number;
-    story_url: string;
-    story_date: string;
-}
-export interface Comment {
-    comment_id: number;
-    post_id: number;
-    parent_comment_id: number | null;
-    comment_text: string;
-    comment_date: Date;
-}
-export interface User {
-    user_id: number;
-    username: string;
+interface User {
+    _id: string;
     name: string;
     email: string;
-    password: string;
     avatar: string;
+    account: {
+        type: string;
+        account_id: string;
+    };
+    password: string;
     bio: string;
     join_date: Date;
-    following_count: number;
-    follower_count: number;
-    post_count: number;
+    following: string[];
+    followers: string[];
+    posts: Post[];
+    tags: string[];
+    stories: Story[];
 }
+interface MinimalUser {
+    _id: string;
+    name: string;
+    avatar: string;
+}
+
+interface Post {
+    _id: string;
+    image_url: string;
+    caption: string;
+    post_date: Date;
+    comments: Comment[];
+    likes: string[];
+}
+
+interface Comment {
+    _id: string;
+    user: string;
+    comment_text: string;
+    replies: string[];
+}
+
+interface Story {
+    _id: string;
+    story_url: string;
+    story_date: Date;
+    viewers: string[];
+}
+
+interface Tag {
+    _id: string;
+    name: string;
+}
+
+export type { MinimalUser, User, Post, Comment, Story, Tag };
