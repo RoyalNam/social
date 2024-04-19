@@ -20,6 +20,7 @@ import Search from './Search';
 import Notifications from './Notifications';
 import CreatePost from '../CreatePost';
 import { useAuthContextProvider } from '@/context/user';
+import SummaryAPI from '@/api';
 
 interface NavProps {
     tit: string;
@@ -140,7 +141,7 @@ const Navbar = () => {
                     handleCloseSidebar();
                     router.push('/');
                 }}
-                className="hidden md:block mb-6 py-2"
+                className="hidden md:block mb-6 py-2 cursor-pointer"
             >
                 <h2
                     className={`hidden lg:block font-mono py-2 italic text-2xl px-3 ${
@@ -161,6 +162,9 @@ const Navbar = () => {
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
             <div className="hidden md:block">Setting</div>
+            <a href={SummaryAPI.auth.logout} className="hidden bg-red-400 md:block">
+                Logout
+            </a>
             {isShowSearch && (
                 <RenderSidebar>
                     <Search />

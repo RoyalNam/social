@@ -226,8 +226,7 @@ const Profile = () => {
                 </div>
                 {selectedPost && (
                     <PostDetail
-                        post={selectedPost}
-                        minimalUser={getMinimalUser() as MinimalUser}
+                        post={{ post: selectedPost, minimalUser: getMinimalUser() as MinimalUser }}
                         closePostDetail={() => setSelectedPost(null)}
                     />
                 )}

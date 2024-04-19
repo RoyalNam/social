@@ -45,8 +45,11 @@ const Login = () => {
         console.log('data', formData);
 
         try {
-            const response = await axios.post(SummaryAPI.accounts.local.url, formData, {
+            const response = await axios.post(SummaryAPI.auth.local, formData, {
                 withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
         } catch (error) {
             setErr(true);
@@ -82,16 +85,16 @@ const Login = () => {
                 </form>
                 <span className="text-sm">OR</span>
                 <div className="flex justify-center gap-2">
-                    <Link href={SummaryAPI.accounts.google.url}>
+                    <Link href={SummaryAPI.auth.google}>
                         <img src="/icons8-google.svg" alt="" className="w-10" />
                     </Link>
-                    <Link href={SummaryAPI.accounts.facebook.url}>
+                    <Link href={SummaryAPI.auth.facebook}>
                         <img src="/icons8-facebook.svg" alt="" className="w-10" />
                     </Link>
                 </div>
                 {isErr && (
                     <span className="text-red-500 text-sm">
-                        Sorry, your password was incorrect. Please double-check your password.
+                        Sorry, an error occurred during login. Please try again later.
                     </span>
                 )}
             </div>

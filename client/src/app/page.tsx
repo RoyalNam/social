@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import MainLayout from './(main)/layout';
-import { Post, Story } from '@/types';
+import { MinimalUser, Post, Story } from '@/types';
 import PostDetail from '@/components/PostDetail';
 import RenderPost from '@/components/Post';
 import Slider from 'react-slick';
@@ -12,30 +12,41 @@ import { BsPlus } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import SummaryAPI from '@/api';
 import Link from 'next/link';
+import { useAuthContextProvider } from '@/context/user';
+
+interface PostProps {
+    post: Post;
+    minimalUser: MinimalUser;
+}
 
 const Home = () => {
     const router = useRouter();
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const userAuth = useAuthContextProvider();
+    const [posts, setPosts] = useState<PostProps[]>([]);
+    const [selectedPost, setSelectedPost] = useState<PostProps | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const postsRes = await axios.get('http://localhost:3000');
-                setPosts(postsRes.data);
-            } catch (err) {
-                throw err;
+            if (userAuth) {
+                setPosts(
+                    userAuth.posts.map((post) => ({
+                        post,
+                        minimalUser: {
+                            _id: userAuth._id,
+                            name: userAuth.name,
+                            avatar: userAuth.avatar,
+                        },
+                    })),
+                );
             }
         };
         fetchData();
-    }, []);
+    }, [userAuth]);
 
     return (
         <MainLayout>
-            <Link href={SummaryAPI.accounts.facebook.url}>Login</Link>
             <Stories />
-
-            {posts.length > 0 && (
+            {/* {posts.length > 0 && (
                 <div className="max-w-[472px] w-full">
                     {posts.map((item) => (
                         <div key={item._id}>
@@ -51,18 +62,25 @@ const Home = () => {
                         </div>
                     ))}
                 </div>
+            )} */}
+            {posts.length > 0 && (
+                <div className="max-w-[472px] w-full">
+                    {posts.map((item) => (
+                        <div key={item.post._id}>
+                            <RenderPost
+                                post={item.post}
+                                minimalUser={{
+                                    _id: item.minimalUser._id,
+                                    avatar: item.minimalUser.avatar,
+                                    name: item.minimalUser.name,
+                                }}
+                                setSelectedPost={() => setSelectedPost(item)}
+                            />
+                        </div>
+                    ))}
+                </div>
             )}
-            {selectedPost && (
-                <PostDetail
-                    post={selectedPost}
-                    minimalUser={{
-                        _id: 'test',
-                        avatar: 'url',
-                        name: 'test',
-                    }}
-                    closePostDetail={() => setSelectedPost(null)}
-                />
-            )}
+            {selectedPost && <PostDetail post={selectedPost} closePostDetail={() => setSelectedPost(null)} />}
         </MainLayout>
     );
 };

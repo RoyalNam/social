@@ -5,14 +5,13 @@ export const createUserValidationSchema = {
         errorMessage: 'Email không hợp lệ',
     },
     name: {
-        optional: true,
+        notEmpty: true,
     },
     password: {
         errorMessage: 'Password phải có ít nhất 6 ký tự',
         isLength: {
             options: { min: 6 },
         },
-        notEmpty: true,
     },
     avatar: {
         optional: true,

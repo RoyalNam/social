@@ -1,7 +1,9 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import InputCus, { InputProps } from '@/components/InputCus';
+import axios from 'axios';
+import SummaryAPI from '@/api';
+import { useRouter } from 'next/navigation';
 
 const Register = () => {
     const router = useRouter();
@@ -13,7 +15,7 @@ const Register = () => {
     };
     const [formData, setFormData] = useState(initialData);
     const [inputErrors, setInputErrors] = useState(initialData);
-
+    const [err, setErr] = useState(false);
     const handleInputChange = (name: string, value: string) => {
         setFormData((prevState) => ({
             ...prevState,
@@ -26,7 +28,6 @@ const Register = () => {
                     fullName: validateFullName(value),
                 }));
                 break;
-
             case 'email':
                 setInputErrors((prevErrors) => ({
                     ...prevErrors,
@@ -36,52 +37,7 @@ const Register = () => {
             case 'password':
                 setInputErrors((prevErrors) => ({
                     ...prevErrors,
-                    password: '',
-                }));
-                break;
-            case 'confirmPassword':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    confirmPassword: '',
-                }));
-                break;
-            default:
-                break;
-        }
-    };
-
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        console.log(formData);
-    };
-    const validateFullName = (value: string) => {
-        return '';
-    };
-
-    const validateEmail = (value: string) => {
-        return '';
-    };
-
-    const validatePassword = (value: string) => {
-        return '';
-    };
-
-    const validateConfirmPassword = (value: string, password: string) => {
-        if (value != password) return 'Passwords do not match';
-        return '';
-    };
-    const handleBlur = (name: string, value: string) => {
-        switch (name) {
-            case 'fullName':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    fullName: value.length < 8 ? 'FullName must be at least 8 characters long' : '',
-                }));
-                break;
-            case 'password':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    password: value.length < 8 ? 'Password must be at least 8 characters long' : '',
+                    password: validatePassword(value),
                 }));
                 break;
             case 'confirmPassword':
@@ -90,10 +46,93 @@ const Register = () => {
                     confirmPassword: validateConfirmPassword(value, formData.password),
                 }));
                 break;
-
             default:
                 break;
         }
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const isFormValid = validateForm();
+        if (isFormValid) {
+            const data = {
+                name: formData.fullName,
+                email: formData.email,
+                password: formData.password,
+            };
+            try {
+                const create = await axios.post(SummaryAPI.auth.register, data);
+                if (create.status === 201) {
+                    redirectToLogin();
+                } else {
+                    setErr(true);
+                }
+            } catch (err) {
+                setErr(true);
+            }
+        } else setErr(true);
+    };
+
+    const validateForm = () => {
+        const fullNameError = validateFullName(formData.fullName);
+        const emailError = validateEmail(formData.email);
+        const passwordError = validatePassword(formData.password);
+        const confirmPasswordError = validateConfirmPassword(formData.confirmPassword, formData.password);
+
+        setInputErrors({
+            fullName: fullNameError,
+            email: emailError,
+            password: passwordError,
+            confirmPassword: confirmPasswordError,
+        });
+
+        return !fullNameError && !emailError && !passwordError && !confirmPasswordError;
+    };
+
+    const validateFullName = (value: string) => {
+        return value.length < 8 ? 'Full name must be at least 8 characters long' : '';
+    };
+
+    const validateEmail = (value: string) => {
+        // Add email validation logic here
+        return ''; // Placeholder
+    };
+
+    const validatePassword = (value: string) => {
+        return value.length < 8 ? 'Password must be at least 8 characters long' : '';
+    };
+
+    const validateConfirmPassword = (value: string, password: string) => {
+        return value !== password ? 'Passwords do not match' : '';
+    };
+
+    const handleBlur = (name: string, value: string) => {
+        switch (name) {
+            case 'fullName':
+                setInputErrors((prevErrors) => ({
+                    ...prevErrors,
+                    fullName: validateFullName(value),
+                }));
+                break;
+            case 'password':
+                setInputErrors((prevErrors) => ({
+                    ...prevErrors,
+                    password: validatePassword(value),
+                }));
+                break;
+            case 'confirmPassword':
+                setInputErrors((prevErrors) => ({
+                    ...prevErrors,
+                    confirmPassword: validateConfirmPassword(value, formData.password),
+                }));
+                break;
+            default:
+                break;
+        }
+    };
+
+    const redirectToLogin = () => {
+        router.push('/account/login');
     };
 
     const INPUTS: InputProps[] = [
@@ -131,20 +170,29 @@ const Register = () => {
 
     return (
         <div className="text-center">
-            <form onSubmit={(e) => handleSubmit(e)} className="flex flex-col gap-4">
-                {INPUTS.map((item, idx) => (
-                    <InputCus key={idx} item={item} />
-                ))}
-                <button
-                    type="submit"
-                    className="font-medium text-lg my-2 transition ease-in-out scale-100 hover:scale-105"
-                >
-                    Get started
-                </button>
-            </form>
+            <div>
+                <form onSubmit={(e) => handleSubmit(e)} className="flex flex-col gap-4">
+                    {INPUTS.map((item, idx) => (
+                        <InputCus key={idx} item={item} />
+                    ))}
+                    <button
+                        type="submit"
+                        className="font-medium text-lg my-2 transition ease-in-out scale-100 hover:scale-105"
+                    >
+                        Get started
+                    </button>
+                </form>
+                {err && (
+                    <span className="max-w-80 block text-red-500 text-sm text-center mb-4">
+                        Sorry, there was an error processing your request. Please make sure all the information is
+                        correct and try again.
+                    </span>
+                )}
+            </div>
+
             <div>
                 I have an account -{' '}
-                <button className="opacity-50 hover:underline" onClick={() => router.push('/account/login')}>
+                <button className="opacity-50 hover:underline" onClick={redirectToLogin}>
                     Login
                 </button>
             </div>

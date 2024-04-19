@@ -94,10 +94,8 @@ passport.use(
             if (!comparePassword(password, findUser.password)) throw new Error('Bad Credentials');
             done(null, findUser);
         } catch (err) {
-            console.log('nyk');
             done(err, null);
         }
-        console.log('nyk');
     }),
 );
 

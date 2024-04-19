@@ -16,6 +16,7 @@ router.get('/login/success', (req, res) => {
         });
     }
 });
+
 router.get('/login/failed', (req, res) => {
     res.status(401).json({
         success: false,
@@ -23,8 +24,15 @@ router.get('/login/failed', (req, res) => {
     });
 });
 router.get('/logout', (req, res) => {
-    req.logout(), res.redirect(process.env.CLIENT_URL);
+    req.logout((err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect(process.env.CLIENT_URL);
+    });
 });
+
 router.post(
     '/local',
     passport.authenticate('local', {
@@ -32,6 +40,7 @@ router.post(
         failureRedirect: '/auth/login/failed',
     }),
 );
+
 router.get('/google', passport.authenticate('google'));
 router.get(
     '/google/callback',
@@ -42,7 +51,6 @@ router.get(
 );
 
 router.get('/facebook', passport.authenticate('facebook'));
-
 router.get(
     '/facebook/callback',
     passport.authenticate('facebook', {

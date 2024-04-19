@@ -7,7 +7,9 @@ import mongoose from 'mongoose';
 import MongoStore from 'connect-mongo';
 import './config/passport.mjs';
 import authRoute from './routes/auth.mjs';
+import postRoute from './routes/posts.mjs';
 import userRouter from './routes/users.mjs';
+import commentRouter from './routes/comments.mjs';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -35,32 +37,32 @@ app.use(
 );
 app.use(
     cors({
-        origin: 'http://localhost:3001',
+        origin: true,
         methods: 'GET,POST,PUT,DELETE',
-        // allowedHeaders: '*',
-        exposedHeaders: ['Access-Control-Allow-Credentials'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        exposedHeaders: '*',
         credentials: true,
     }),
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.use('/auth', authRoute);
-app.use(userRouter);
-
-const port = process.env.PORT || 3000;
-
-app.listen(port, () => {
-    console.log(`Running on Port: ${port}`);
-});
-
 app.get('/', (request, response) => {
     console.log(request.session);
     console.log(request.session.id);
     request.session.visited = true;
     response.cookie('hello', 'world', { maxAge: 30000, signed: true });
     response.status(201).send({ msg: 'Hello World' });
+});
+app.use('/auth', authRoute);
+app.use(userRouter);
+app.use(postRoute);
+app.use(commentRouter);
+
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+    console.log(`Running on Port: ${port}`);
 });
 
 // app.post('/api/auth', passport.authenticate('local'), (request, response) => {
