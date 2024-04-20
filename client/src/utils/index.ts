@@ -7,28 +7,67 @@ export const formatNumber = (number: number) => {
         return (number / 1000000).toFixed(1) + 'M';
     }
 };
-export const applyFilters = (imgUrl: string, filters: any) => {
-    const filterString = `brightness(${filters.brightness / 100 + 0.5}) contrast(${
-        filters.contrast / 100 + 0.5
-    }) saturate(${filters.saturate}%) hue-rotate(${(filters.hue_rotate - 50) * 3.6}deg) sepia(${filters.sepia}%)`;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-        const img = new Image();
-        img.src = imgUrl;
-        img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
+export const resizeImage = (img: HTMLImageElement, maxWidth = 860, maxHeight = 860): HTMLCanvasElement => {
+    let width = img.width;
+    let height = img.height;
+    const minWidth = 400;
+    const minHeight = 400;
 
-            ctx.filter = filterString;
-            ctx.drawImage(img, 0, 0);
-
-            const filteredImgUrl = canvas.toDataURL();
-            return filteredImgUrl;
-        };
+    if (width < minWidth && height < minHeight) {
+        const ratioX = minWidth / width;
+        const ratioY = minHeight / height;
+        const ratio = Math.max(ratioX, ratioY);
+        width *= ratio;
+        height *= ratio;
+    } else {
+        const ratioX = maxWidth / width;
+        const ratioY = maxHeight / height;
+        const ratio = Math.min(ratioX, ratioY);
+        width *= ratio;
+        height *= ratio;
     }
-    return '';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (context) {
+        context.drawImage(img, 0, 0, width, height);
+        return canvas;
+    } else {
+        throw new Error('Failed to get canvas context');
+    }
 };
+
+export const applyFilters = (imgUrl: string, filters: any): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const filterString = `brightness(${filters.brightness / 100 + 0.5}) contrast(${
+            filters.contrast / 100 + 0.5
+        }) saturate(${filters.saturate}%) hue-rotate(${(filters.hue_rotate - 50) * 3.6}deg) sepia(${filters.sepia}%)`;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            const img = new Image();
+            img.src = imgUrl;
+            img.onload = function () {
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                ctx.filter = filterString;
+                ctx.drawImage(img, 0, 0);
+
+                const filteredImgUrl = canvas.toDataURL();
+                resolve(filteredImgUrl);
+            };
+            img.onerror = function (error) {
+                reject(error);
+            };
+        } else {
+            reject(new Error('Canvas context is not supported'));
+        }
+    });
+};
+
 export const timeAgoFromPast = (pastTime: Date) => {
     var currentTime = new Date();
     var timeDifference = currentTime.getTime() - pastTime.getTime();

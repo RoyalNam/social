@@ -2,9 +2,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import MainLayout from './(main)/layout';
-import { MinimalUser, Post, Story } from '@/types';
+import { MinimalUser, Post, PostProps, Story } from '@/types';
 import PostDetail from '@/components/PostDetail';
-import RenderPost from '@/components/Post';
+import RenderPost from '@/components/PostItem';
 import Slider from 'react-slick';
 import Modal from '@/components/Modal';
 import CreatePost from '@/components/CreatePost';
@@ -13,11 +13,6 @@ import { useRouter } from 'next/navigation';
 import SummaryAPI from '@/api';
 import Link from 'next/link';
 import { useAuthContextProvider } from '@/context/user';
-
-interface PostProps {
-    post: Post;
-    minimalUser: MinimalUser;
-}
 
 const Home = () => {
     const router = useRouter();
@@ -31,7 +26,7 @@ const Home = () => {
                 setPosts(
                     userAuth.posts.map((post) => ({
                         post,
-                        minimalUser: {
+                        author: {
                             _id: userAuth._id,
                             name: userAuth.name,
                             avatar: userAuth.avatar,
@@ -68,11 +63,9 @@ const Home = () => {
                     {posts.map((item) => (
                         <div key={item.post._id}>
                             <RenderPost
-                                post={item.post}
-                                minimalUser={{
-                                    _id: item.minimalUser._id,
-                                    avatar: item.minimalUser.avatar,
-                                    name: item.minimalUser.name,
+                                postData={{
+                                    author: item.author,
+                                    post: item.post,
                                 }}
                                 setSelectedPost={() => setSelectedPost(item)}
                             />
@@ -80,7 +73,7 @@ const Home = () => {
                     ))}
                 </div>
             )}
-            {selectedPost && <PostDetail post={selectedPost} closePostDetail={() => setSelectedPost(null)} />}
+            {selectedPost && <PostDetail postData={selectedPost} closePostDetail={() => setSelectedPost(null)} />}
         </MainLayout>
     );
 };
@@ -95,38 +88,50 @@ const Stories = () => {
     const [activeSlide, setActiveSlide] = useState(0);
     const [isShowCreatePost, setShowCreatePost] = useState(false);
     const [stories, setStories] = useState<Story[] | []>([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const storiesRes = await axios.get('http://localhost:3000');
-                if (storiesRes) {
-                    setStories(storiesRes.data);
-                }
-            } catch (error) {
-                throw error;
-            }
-        };
-        fetchData();
-    }, []);
-
-    useEffect(() => {
-        const sliderElement = sliderRef.current;
-        const updateSlidesToShow = () => {
-            if (sliderElement) {
-                const slideWidth = sliderElement.offsetWidth;
-                if (slideWidth) {
-                    const calculatedSlidesToShow = Math.round(slideWidth / 90);
-                    setSlidesToShow(calculatedSlidesToShow);
-                }
-            }
-        };
-        updateSlidesToShow();
-        window.addEventListener('resize', updateSlidesToShow);
-        return () => {
-            window.removeEventListener('resize', updateSlidesToShow);
-        };
-    }, []);
+    useEffect(() => {}, []);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const storiesRes = await axios.get('http://localhost:3000');
+    //             if (storiesRes) {
+    //                 setStories(storiesRes.data);
+    //             }
+    //         } catch (error) {
+    //             throw error;
+    //         }
+    //     };
+    //     fetchData();
+    // }, []);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const resp = await axios.post('http://localhost:3000/api/users', {
+    //             name: 'John Doe',
+    //             email: 'johnx12345@example.com',
+    //             avatar: 'https://i.pinimg.com/564x/85/f0/55/85f055dbe68bf317b09dbc5d4ec89bd9.jpg',
+    //             password: 'hashedpassword123',
+    //             bio: 'Hello, I am John Doe!',
+    //         });
+    //         console.log(resp);
+    //     };
+    //     fetchData();
+    // }, []);
+    // useEffect(() => {
+    //     const sliderElement = sliderRef.current;
+    //     const updateSlidesToShow = () => {
+    //         if (sliderElement) {
+    //             const slideWidth = sliderElement.offsetWidth;
+    //             if (slideWidth) {
+    //                 const calculatedSlidesToShow = Math.round(slideWidth / 90);
+    //                 setSlidesToShow(calculatedSlidesToShow);
+    //             }
+    //         }
+    //     };
+    //     updateSlidesToShow();
+    //     window.addEventListener('resize', updateSlidesToShow);
+    //     return () => {
+    //         window.removeEventListener('resize', updateSlidesToShow);
+    //     };
+    // }, []);
 
     const SampleNextArrow = (props: any) => {
         const { className, style, onClick } = props;

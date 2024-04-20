@@ -1,16 +1,18 @@
-import express, { request, response } from 'express';
+import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-import passport from 'passport';
 import mongoose from 'mongoose';
 import MongoStore from 'connect-mongo';
-import './config/passport.mjs';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
+import session from 'express-session';
+import passport from 'passport';
 import authRoute from './routes/auth.mjs';
 import postRoute from './routes/posts.mjs';
 import userRouter from './routes/users.mjs';
 import commentRouter from './routes/comments.mjs';
+import followRouter from './routes/follow.mjs';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 const app = express();
@@ -19,6 +21,17 @@ mongoose
     .connect('mongodb://localhost/MXH')
     .then(() => console.log('connect to database'))
     .catch((err) => console.log(`Error: ${err}`));
+
+app.use(
+    cors({
+        origin: true,
+        methods: 'GET,POST,PUT,DELETE',
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        exposedHeaders: '*',
+        credentials: true,
+    }),
+);
+// app.options('*', cors());
 
 app.use(express.json());
 app.use(cookieParser('helloworld'));
@@ -35,15 +48,9 @@ app.use(
         }),
     }),
 );
-app.use(
-    cors({
-        origin: true,
-        methods: 'GET,POST,PUT,DELETE',
-        allowedHeaders: ['Content-Type', 'Authorization'],
-        exposedHeaders: '*',
-        credentials: true,
-    }),
-);
+
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -55,16 +62,13 @@ app.get('/', (request, response) => {
     response.status(201).send({ msg: 'Hello World' });
 });
 app.use('/auth', authRoute);
-app.use(userRouter);
 app.use(postRoute);
+app.use(userRouter);
 app.use(commentRouter);
+app.use(followRouter);
 
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
     console.log(`Running on Port: ${port}`);
 });
-
-// app.post('/api/auth', passport.authenticate('local'), (request, response) => {
-//     response.sendStatus(200);
-// });

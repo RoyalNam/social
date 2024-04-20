@@ -26,13 +26,29 @@ router.get('/api/users', async (request, response) => {
 });
 
 router.get('/api/users/:id', async (request, response) => {
-    const { findUserIndex } = request;
+    const {
+        params: { id },
+    } = request;
     try {
-        const findUser = await User.findById(findUserIndex);
+        const findUser = await User.findById(id);
         return response.status(201).send(findUser);
     } catch (err) {
         console.log(err);
         return response.sendStatus(404);
+    }
+});
+
+router.get('/api/users/:id/basic_info', async (request, response) => {
+    const id = request.params.id;
+    try {
+        const findUser = await User.findById(id, 'name email avatar bio');
+        if (!findUser) {
+            return response.status(404).send({ message: 'User not found' });
+        }
+        return response.status(200).send(findUser);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send({ message: 'Internal server error' });
     }
 });
 

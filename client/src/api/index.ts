@@ -8,5 +8,8 @@ const SummaryAPI = {
         local: `${SERVER_DOMAIN}/auth/local/`,
         logout: `${SERVER_DOMAIN}/auth/logout/`,
     },
+    user: `${SERVER_DOMAIN}/api/users`,
+    post: `${SERVER_DOMAIN}/api/posts`,
 };
+
 export default SummaryAPI;

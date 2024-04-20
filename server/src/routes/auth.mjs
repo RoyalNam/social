@@ -1,3 +1,4 @@
+import '../config/passport.mjs';
 import { Router } from 'express';
 import passport from 'passport';
 const router = Router();

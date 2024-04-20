@@ -33,7 +33,6 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
                     }
                 }
             } catch (error) {
-                console.log('Error:', error);
                 router.push('/account/login');
             }
         };

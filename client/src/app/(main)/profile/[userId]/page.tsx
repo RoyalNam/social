@@ -20,6 +20,7 @@ import CreatePost from '@/components/CreatePost';
 import { useAuthContextProvider } from '@/context/user';
 import { MinimalUser, Post, User } from '@/types';
 import axios from 'axios';
+import SummaryAPI from '@/api';
 
 interface TabProps {
     icon: React.ReactNode;
@@ -39,10 +40,9 @@ const Profile = () => {
             if (userId == userAuth?._id) {
                 setUser(userAuth);
             } else {
-                const userRes = await axios.get('http://localhost:3000/api/users?filter=username&value=john_doe121111');
-                console.log('user', userRes);
-
-                if (userRes) setUser(userRes.data[0]);
+                // const userRes = await axios.get(`${SummaryAPI.user}/${userId}`);
+                const userRes = await axios.get(`${SummaryAPI.user}/6621d4b6b57a43c4720e705c`);
+                if (userRes) setUser(userRes.data);
             }
         };
         fetchData();
@@ -112,12 +112,20 @@ const Profile = () => {
         user && (
             <div>
                 <div className="flex gap-8 border-b border-white/20 flex-col md:flex-row">
-                    <img src={user.avatar} alt="" className="hidden md:block w-36 h-36 rounded-full" />
+                    <img
+                        src={user.avatar ?? '/user.png'}
+                        alt=""
+                        className="dark:bg-white hidden md:block w-36 h-36 rounded-full"
+                    />
                     <div className="flex-1">
                         <div>
                             <div className="flex gap-3 justify-between">
                                 <div className="flex gap-3">
-                                    <img src={user.avatar} alt="" className="block md:hidden w-12 h-12 rounded-full" />
+                                    <img
+                                        src={user.avatar ?? '/user.png'}
+                                        alt=""
+                                        className="dark:bg-white block md:hidden w-12 h-12 rounded-full"
+                                    />
                                     <div>
                                         <h5>{user.name}</h5>
                                     </div>
@@ -195,11 +203,6 @@ const Profile = () => {
                                                     <span>{formatNumber(item.comments.length)}</span>
                                                 </div>
                                             </div>
-                                            {/* {item.media_type == 'image' && (
-                                            <span className="absolute top-2 right-2 text-xl opacity-50">
-                                                <BsPlayBtn />
-                                            </span>
-                                        )} */}
                                         </div>
                                     ))}
                                 </div>
@@ -226,7 +229,7 @@ const Profile = () => {
                 </div>
                 {selectedPost && (
                     <PostDetail
-                        post={{ post: selectedPost, minimalUser: getMinimalUser() as MinimalUser }}
+                        postData={{ post: selectedPost, author: getMinimalUser() as MinimalUser }}
                         closePostDetail={() => setSelectedPost(null)}
                     />
                 )}

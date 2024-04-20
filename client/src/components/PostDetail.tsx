@@ -2,79 +2,62 @@ import React, { useEffect, useState } from 'react';
 import { BsArrowReturnRight, BsX } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import Modal from './Modal';
-import RenderPost from './Post';
-import { Comment, MinimalUser, Post, User } from '@/types';
+import RenderPost from './PostItem';
 import axios from 'axios';
+import { CommentProps, PostProps, Reply } from '@/types';
 
-interface PostProps {
-    post: Post;
-    minimalUser: MinimalUser;
-}
-interface PostDetailProps {
-    post: PostProps;
+export interface PostDetailProps {
+    postData: PostProps;
     closePostDetail: () => void;
 }
-interface CommentProps {
-    comment: Comment;
-    minimalUser: MinimalUser;
-}
-const PostDetail: React.FC<PostDetailProps> = ({ post, closePostDetail }) => {
+
+const PostDetail: React.FC<PostDetailProps> = ({ postData, closePostDetail }) => {
+    const { author, post } = postData;
     const router = useRouter();
     const [comments, setComments] = useState<CommentProps[]>([]);
 
-    const renderComment = (comment: CommentProps) => {
-        return (
-            <div className="flex gap-2" key={comment.comment._id}>
-                <img
-                    src={comment.minimalUser.avatar}
-                    onClick={() => router.push(`/profile/${comment.minimalUser._id}`)}
-                    alt=""
-                    loading="lazy"
-                    className="w-10 h-10 rounded-full cursor-pointer"
-                />
-                <div className="">
-                    <h4
-                        className="cursor-pointer font-semibold"
-                        onClick={() => router.push(`/profile/${comment.minimalUser._id}`)}
-                    >
-                        {comment.minimalUser.name}
-                    </h4>
-                    <pre className="text-wrap">{comment.comment.comment_text}</pre>
-                    <div className="flex gap-2 text-xs">
-                        <button>Like</button>
-                        <button>Reply</button>
-                    </div>
-                    <button className="text-xs inline-flex gap-0.5 items-center">
-                        <BsArrowReturnRight />
-                        <span>See more</span>
-                    </button>
+    const renderComment = (commentData: CommentProps) => {
+        const { comment } = commentData;
+
+        const renderReplies = (replies: Reply[]) => {
+            if (!replies || replies.length === 0) return null;
+
+            return replies.map((reply) => (
+                <div className="ml-6" key={`${reply.user}-${reply.reply_text}`}>
+                    <h4 className="font-semibold">{reply.user}</h4>
+                    <p>{reply.reply_text}</p>
+                    {/* Đệ quy để hiển thị các phản hồi của phản hồi */}
+                    {renderReplies(reply.replies || [])}
                 </div>
+            ));
+        };
+
+        return (
+            <div>
+                <h4 className="font-semibold">{comment.user}</h4>
+                <p>{comment.comment_text}</p>
+                {renderReplies(comment.replies || [])}
             </div>
         );
     };
 
     return (
-        post && (
-            <Modal show={post != null} onClose={closePostDetail}>
+        postData && (
+            <Modal show={postData != null} onClose={closePostDetail}>
                 <div className="z-40 relative bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
                     <div className="hidden md:flex flex-1 items-center border-r">
                         <img
-                            src={post.post.image_url}
+                            src={post.image_url}
                             alt=""
                             loading="lazy"
                             className="max-w-full max-h-full w-full h-auto object-cover"
                         />
                     </div>
                     <div className="w-full md:w-[400px] h-full pt-5 pb-3 px-4 flex flex-col">
-                        <RenderPost
-                            post={post.post}
-                            minimalUser={post.minimalUser}
-                            setSelectedPost={() => {}}
-                            isShowImg={false}
-                        />
+                        <RenderPost postData={postData} setSelectedPost={() => {}} isShowImg={false} />
                         <div className="md:hidden flex items-center -mx-4">
                             <img
-                                src={post.post.image_url}
+                                src={post.image_url}
                                 alt=""
                                 loading="lazy"
                                 className="max-w-full max-h-full w-full h-auto object-cover"

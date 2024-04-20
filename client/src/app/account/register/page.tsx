@@ -171,7 +171,7 @@ const Register = () => {
     return (
         <div className="text-center">
             <div>
-                <form onSubmit={(e) => handleSubmit(e)} className="flex flex-col gap-4">
+                <form onSubmit={(e) => handleSubmit(e)} className="flex flex-col gap-8">
                     {INPUTS.map((item, idx) => (
                         <InputCus key={idx} item={item} />
                     ))}

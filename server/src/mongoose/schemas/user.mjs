@@ -1,6 +1,15 @@
-import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
+
+const replySchema = new Schema({
+    _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    reply_text: { type: String },
+});
+
+replySchema.add({
+    replies: [replySchema],
+});
 
 // Define Schema for User
 const userSchema = new Schema({
@@ -28,9 +37,8 @@ const userSchema = new Schema({
             comments: [
                 {
                     _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
-                    user: { type: Schema.Types.ObjectId, ref: 'User' },
                     comment_text: { type: String },
-                    replies: [{ type: Schema.Types.ObjectId, ref: 'Reply' }],
+                    replies: [replySchema],
                 },
             ],
             likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
@@ -39,7 +47,7 @@ const userSchema = new Schema({
     tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
     stories: [
         {
-            _id: Schema.Types.ObjectId,
+            _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
             story_url: { type: String },
             story_date: { type: Date, default: Date.now },
             viewers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
@@ -52,17 +60,7 @@ const tagSchema = new Schema({
     name: { type: String, unique: true },
 });
 
-const replySchema = new Schema({
-    _id: Schema.Types.ObjectId,
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
-    reply_text: { type: String },
-    replies: [{ type: Schema.Types.ObjectId, ref: 'Reply' }],
-});
-
-//Define model
 const User = mongoose.model('User', userSchema);
 const Tag = mongoose.model('Tag', tagSchema);
-const Reply = mongoose.model('Reply', replySchema);
 
-//Export
 export { User, Tag };

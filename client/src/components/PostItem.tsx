@@ -4,21 +4,21 @@ import { useRouter } from 'next/navigation';
 import { formatNumber } from '@/utils';
 import { timeAgoFromPast } from '@/utils';
 import Modal from './Modal';
-import { MinimalUser, Post } from '@/types';
+import { MinimalUser, PostProps } from '@/types';
 
-interface PostProps {
-    post: Post;
-    minimalUser: MinimalUser;
+interface PostItemProps {
+    postData: PostProps;
     isShowImg?: boolean;
     setSelectedPost: () => void;
 }
 
-const RenderPost: React.FC<PostProps> = ({ post, minimalUser, isShowImg = true, setSelectedPost }) => {
+const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, setSelectedPost }) => {
+    const { author, post } = postData;
     return (
         post && (
             <div className="border-b border-black/30 dark:border-white/20 py-4">
                 <div>
-                    <UserInfo minimalUser={minimalUser} post_date={new Date(post.post_date)} />
+                    <UserInfo minimalUser={author} post_date={new Date(post.post_date)} />
                     {isShowImg && <img src={post.image_url} alt="" loading="lazy" className="w-full max-h my-2" />}
                     <pre className="text-wrap font-sans leading-5">{post.caption}</pre>
                     <div className="text-2xl flex justify-between mt-2">
@@ -124,4 +124,4 @@ const UserInfo = ({ minimalUser, post_date }: { minimalUser: MinimalUser; post_d
     );
 };
 
-export default RenderPost;
+export default PostItem;

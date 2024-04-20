@@ -2,8 +2,10 @@
 import React, { useRef, useState } from 'react';
 import { BsArrowLeft, BsImages, BsX } from 'react-icons/bs';
 import { Post } from '@/types';
-import { applyFilters } from '@/utils';
 import Modal from './Modal';
+import axios from 'axios';
+import SummaryAPI from '@/api';
+import { applyFilters, resizeImage } from '@/utils';
 
 interface RangeProps {
     tit: string;
@@ -12,18 +14,15 @@ interface RangeProps {
 
 const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const captionRef = useRef<HTMLTextAreaElement>(null);
     const [step, setStep] = useState<string[]>([]);
     const [stepsReverse, setStepsReverse] = useState(['caption', 'edit', 'upload_file']);
     const [isDiscard, setDiscard] = useState(false);
-    const [post, setPost] = useState<Post>({
-        user_id: 1,
-        post_id: 1,
-        caption: '',
-        media_url: '',
-        post_date: new Date(),
-        like_count: 0,
-        comment_count: 0,
-    });
+    const [imageUrl, setImageUrl] = useState('');
+    // const [post, setPost] = useState({
+    //     image_url: '',
+    //     caption: '',
+    // });
     const initialFilters = {
         brightness: 50,
         contrast: 50,
@@ -41,7 +40,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
     ];
 
     const handleIconClick = () => {
-        if (!post?.media_url && fileInputRef.current) {
+        if (!imageUrl && fileInputRef.current) {
             fileInputRef.current.click();
         }
     };
@@ -53,14 +52,22 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
 
             reader.onload = (e) => {
                 if (e.target) {
-                    const mediaUrl = e.target.result as string;
-                    setPost((prev) => ({
-                        ...prev,
-                        media_url: mediaUrl,
-                    }));
+                    const imageUrl = e.target.result as string;
 
-                    const newStep = stepsReverse.pop();
-                    if (newStep) setStep([newStep]);
+                    // Tạo một ảnh mới để load dữ liệu từ file
+                    const image = new Image();
+                    image.onload = () => {
+                        try {
+                            const canvas = resizeImage(image);
+                            const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.7);
+                            setImageUrl(resizedImageUrl);
+                            const newStep = stepsReverse.pop();
+                            if (newStep) setStep([newStep]);
+                        } catch (error) {
+                            console.error('Error while resizing image:', error);
+                        }
+                    };
+                    image.src = imageUrl;
                 }
             };
             reader.readAsDataURL(selectedFile);
@@ -85,13 +92,22 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
         }
     };
 
-    const handleCreate = () => {
-        if (post.media_url) {
-            const filteredImgUrl = applyFilters(post.media_url, filters);
-            setPost((prev) => ({ ...prev, media_url: filteredImgUrl }));
-            console.log('post.media_url', post.media_url);
-            console.log('filter', filters);
-            handleResetDefaults();
+    const handleCreate = async () => {
+        if (imageUrl) {
+            try {
+                const filteredImageUrl = await applyFilters(imageUrl, filters);
+                const imgURL = filteredImageUrl;
+                handleResetDefaults();
+
+                const createPost = await axios.post(SummaryAPI.post, {
+                    image_url: imgURL,
+                    caption: captionRef.current?.value,
+                });
+
+                console.log(createPost.data);
+            } catch (error) {
+                console.error(error);
+            }
         }
     };
 
@@ -100,7 +116,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
         const steps = step.reverse();
         setStepsReverse((prevStepsReverse) => [...prevStepsReverse, ...steps]);
         setStep([]);
-        setPost((prev) => ({ ...prev, media_url: '' }));
+        setImageUrl('');
     };
     const handleResetDefaults = () => {
         handleResetSteps();
@@ -143,6 +159,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
             {step[step.length - 1] === 'caption' && (
                 <div className="p-3 bg-[#334155]">
                     <textarea
+                        ref={captionRef}
                         name=""
                         id=""
                         className="w-full min-h-[180px] max-h-[300px] bg-transparent outline-none"
@@ -158,7 +175,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
             <Modal
                 show={show}
                 onClose={() => {
-                    post.media_url ? setDiscard(true) : onClose();
+                    imageUrl ? setDiscard(true) : onClose();
                 }}
             >
                 <div
@@ -167,7 +184,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                     } max-w-[945px] m-4 z-40 bg-white dark:bg-primary flex flex-col rounded-xl overflow-hidden`}
                 >
                     <div className="border-b border-black/30 dark:border-white/20 py-2 text-center flex justify-between px-4">
-                        {post.media_url && (
+                        {imageUrl && (
                             <button title="Back" className="text-blue-400" onClick={handleBack}>
                                 <BsArrowLeft className="text-xl" />
                             </button>
@@ -177,18 +194,18 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                         ) : (
                             <h5 className="flex-1">{step[step.length - 1] === 'edit' ? 'Edit' : 'Permission'}</h5>
                         )}
-                        {post.media_url && (
+                        {imageUrl && (
                             <button className="text-blue-400" onClick={handleNext}>
                                 {step[step.length - 1] === 'caption' ? 'Share' : 'Next'}
                             </button>
                         )}
                     </div>
                     <div className="h-[640px]">
-                        {post.media_url ? (
+                        {imageUrl ? (
                             <div className="h-full flex flex-col md:flex-row">
-                                <div className="flex-1 relative border-r border-black/30 dark:border-white/20">
+                                <div className="flex-1 flex justify-center items-center relative border-r border-black/30 dark:border-white/20">
                                     <img
-                                        src={post.media_url}
+                                        src={imageUrl}
                                         alt=""
                                         loading="lazy"
                                         style={{
@@ -198,7 +215,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                                                 (filters.hue_rotate - 50) * 3.6
                                             }deg) sepia(${filters.sepia}%)`,
                                         }}
-                                        className="w-full h-full object-cover saturate-150"
+                                        className="max-w-full max-h-full"
                                     />
                                     <span
                                         className="absolute right-3 top-3 p-1 rounded-full bg-black/75 cursor-pointer"

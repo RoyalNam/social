@@ -4,6 +4,7 @@ const router = express.Router();
 router.post('/api/posts', async (req, res) => {
     try {
         const { image_url, caption } = req.body;
+        console.log('Request body size:', JSON.stringify(req.body).length);
 
         if (!req.isAuthenticated()) {
             return res.status(401).json({ message: 'Unauthorized' });

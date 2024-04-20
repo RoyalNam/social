@@ -5,7 +5,7 @@ export interface InputProps {
     type?: 'text' | 'email' | 'password' | 'number';
     placeholder: string;
     value: any;
-    err: string;
+    err?: string;
     onChange: (value: string) => void;
     onBlur?: (value: string) => void;
 }
@@ -44,8 +44,8 @@ const InputCus = ({ item }: { item: InputProps }) => {
                 <span className={`absolute left-2 -top-4 bg-primary px-1 ${isEmpty ? 'hidden' : 'block'}`}>
                     {item.placeholder}
                 </span>
+                {item.err && <span className="absolute top-10 inset-0 text-red-500 text-xs">{item.err}</span>}
             </div>
-            {item.err && <div className="text-red-500 text-xs mt-1">{item.err}</div>}
         </div>
     );
 };

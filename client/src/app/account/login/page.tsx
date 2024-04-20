@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import InputCus from '@/components/InputCus';
 import Link from 'next/link';
@@ -14,36 +14,29 @@ const Login = () => {
         password: '',
     };
     const [formData, setFormData] = useState(initialData);
-    const [inputErrors, setInputErrors] = useState(initialData);
-
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const resp = await axios.post('http://localhost:3000/api/users', {
+    //             name: 'John Doe',
+    //             email: 'johnx1234@example.com',
+    //             avatar: 'https://i.pinimg.com/564x/85/f0/55/85f055dbe68bf317b09dbc5d4ec89bd9.jpg',
+    //             password: 'hashedpassword123',
+    //             bio: 'Hello, I am John Doe!',
+    //         });
+    //         console.log(resp);
+    //     };
+    //     fetchData();
+    // }, []);
     const handleInputChange = (name: string, value: string) => {
         setFormData((prevState) => ({
             ...prevState,
             [name]: value,
         }));
-
-        if (name == 'password')
-            setInputErrors((prevErrors) => ({
-                ...prevErrors,
-                password: '',
-            }));
-    };
-    const handleBlur = (value: string) => {
-        setInputErrors((prevErrors) => ({
-            ...prevErrors,
-            password: validatePassword(value),
-        }));
-    };
-
-    const validatePassword = (value: string) => {
-        if (value.length < 8) return 'Password must be at least 8 characters long';
-        return '';
+        setErr(false);
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log('data', formData);
-
         try {
             const response = await axios.post(SummaryAPI.auth.local, formData, {
                 withCredentials: true,
@@ -51,21 +44,24 @@ const Login = () => {
                     'Content-Type': 'application/json',
                 },
             });
-        } catch (error) {
+        } catch (error: any) {
+            if (!error.response) window.location.href = 'http://localhost:3001/';
             setErr(true);
         }
     };
-
+    const redirectToRegister = () => {
+        router.push('/account/register');
+    };
     return (
         <div className="flex flex-col gap-4">
+            <button className="bg-red-500 p-4">HELLO</button>
             <div className="flex items-center flex-col gap-4">
-                <form action="" method="post" onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form action="" method="post" onSubmit={handleSubmit} className="flex flex-col gap-8">
                     <InputCus
                         item={{
                             type: 'email',
                             placeholder: 'Email',
                             value: formData.username,
-                            err: inputErrors.username,
                             onChange: (value) => handleInputChange('username', value),
                         }}
                     />
@@ -74,9 +70,7 @@ const Login = () => {
                             type: 'password',
                             placeholder: 'Password',
                             value: formData.password,
-                            err: inputErrors.password,
                             onChange: (value) => handleInputChange('password', value),
-                            onBlur: () => handleBlur(formData.password),
                         }}
                     />
                     <button className="underline font-medium text-lg my-2 transition ease-in-out scale-100 hover:scale-105">
@@ -101,7 +95,7 @@ const Login = () => {
             <div className="text-center">
                 <span>
                     No account -{' '}
-                    <button className="opacity-50 hover:underline" onClick={() => router.push('/account/register')}>
+                    <button className="opacity-50 hover:underline" onClick={redirectToRegister}>
                         Join now
                     </button>
                 </span>
