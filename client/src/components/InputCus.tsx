@@ -41,7 +41,9 @@ const InputCus = ({ item }: { item: InputProps }) => {
                         <BsEye />
                     </span>
                 )}
-                <span className={`absolute left-2 -top-4 bg-primary px-1 ${isEmpty ? 'hidden' : 'block'}`}>
+                <span
+                    className={`absolute left-2 -top-4 bg-white dark:bg-primary px-1 ${isEmpty ? 'hidden' : 'block'}`}
+                >
                     {item.placeholder}
                 </span>
                 {item.err && <span className="absolute top-10 inset-0 text-red-500 text-xs">{item.err}</span>}

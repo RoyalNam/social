@@ -1,10 +1,8 @@
 'use client';
 import React, { useRef, useState } from 'react';
 import { BsArrowLeft, BsImages, BsX } from 'react-icons/bs';
-import { Post } from '@/types';
-import Modal from './Modal';
-import axios from 'axios';
-import SummaryAPI from '@/api';
+import Modal from '../Modal';
+import { createPost } from '@/api';
 import { applyFilters, resizeImage } from '@/utils';
 
 interface RangeProps {
@@ -19,10 +17,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
     const [stepsReverse, setStepsReverse] = useState(['caption', 'edit', 'upload_file']);
     const [isDiscard, setDiscard] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
-    // const [post, setPost] = useState({
-    //     image_url: '',
-    //     caption: '',
-    // });
+
     const initialFilters = {
         brightness: 50,
         contrast: 50,
@@ -53,8 +48,6 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
             reader.onload = (e) => {
                 if (e.target) {
                     const imageUrl = e.target.result as string;
-
-                    // Tạo một ảnh mới để load dữ liệu từ file
                     const image = new Image();
                     image.onload = () => {
                         try {
@@ -98,13 +91,12 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                 const filteredImageUrl = await applyFilters(imageUrl, filters);
                 const imgURL = filteredImageUrl;
                 handleResetDefaults();
-
-                const createPost = await axios.post(SummaryAPI.post, {
+                const post = await createPost({
                     image_url: imgURL,
                     caption: captionRef.current?.value,
                 });
 
-                console.log(createPost.data);
+                console.log(post);
             } catch (error) {
                 console.error(error);
             }
@@ -157,7 +149,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                 </div>
             )}
             {step[step.length - 1] === 'caption' && (
-                <div className="p-3 bg-[#334155]">
+                <div className="p-3 bg-gray-400 dark:bg-[#334155]">
                     <textarea
                         ref={captionRef}
                         name=""

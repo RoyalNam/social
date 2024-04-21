@@ -1,9 +1,8 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
 import InputCus, { InputProps } from '@/components/InputCus';
-import axios from 'axios';
-import SummaryAPI from '@/api';
 import { useRouter } from 'next/navigation';
+import { register } from '@/api';
 
 const Register = () => {
     const router = useRouter();
@@ -54,23 +53,26 @@ const Register = () => {
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const isFormValid = validateForm();
-        if (isFormValid) {
-            const data = {
-                name: formData.fullName,
-                email: formData.email,
-                password: formData.password,
-            };
-            try {
-                const create = await axios.post(SummaryAPI.auth.register, data);
-                if (create.status === 201) {
+        try {
+            if (isFormValid) {
+                const data = {
+                    name: formData.fullName,
+                    email: formData.email,
+                    password: formData.password,
+                };
+                const isRegistered = await register(data);
+                if (isRegistered) {
                     redirectToLogin();
                 } else {
                     setErr(true);
                 }
-            } catch (err) {
+            } else {
                 setErr(true);
             }
-        } else setErr(true);
+        } catch (error) {
+            console.error('Error during registration:', error);
+            setErr(true);
+        }
     };
 
     const validateForm = () => {

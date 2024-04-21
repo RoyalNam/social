@@ -1,68 +1,34 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import MainLayout from './(main)/layout';
-import { MinimalUser, Post, PostProps, Story } from '@/types';
-import PostDetail from '@/components/PostDetail';
-import RenderPost from '@/components/PostItem';
-import Slider from 'react-slick';
-import Modal from '@/components/Modal';
-import CreatePost from '@/components/CreatePost';
-import { BsPlus } from 'react-icons/bs';
-import { useRouter } from 'next/navigation';
-import SummaryAPI from '@/api';
-import Link from 'next/link';
-import { useAuthContextProvider } from '@/context/user';
+import { PostProps } from '@/types';
+import PostDetail from '@/components/post/PostDetail';
+import { fetchPosts } from '@/api';
+import PostItem from '@/components/post/PostItem';
 
 const Home = () => {
-    const router = useRouter();
-    const userAuth = useAuthContextProvider();
     const [posts, setPosts] = useState<PostProps[]>([]);
     const [selectedPost, setSelectedPost] = useState<PostProps | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (userAuth) {
-                setPosts(
-                    userAuth.posts.map((post) => ({
-                        post,
-                        author: {
-                            _id: userAuth._id,
-                            name: userAuth.name,
-                            avatar: userAuth.avatar,
-                        },
-                    })),
-                );
+            try {
+                const posts = await fetchPosts();
+                if (posts) setPosts(posts.posts);
+            } catch (err) {
+                throw err;
             }
         };
         fetchData();
-    }, [userAuth]);
+    }, []);
 
     return (
         <MainLayout>
-            <Stories />
-            {/* {posts.length > 0 && (
-                <div className="max-w-[472px] w-full">
-                    {posts.map((item) => (
-                        <div key={item._id}>
-                            <RenderPost
-                                post={item}
-                                minimalUser={{
-                                    _id: 'test',
-                                    avatar: 'url',
-                                    name: 'test',
-                                }}
-                                setSelectedPost={() => setSelectedPost(item)}
-                            />
-                        </div>
-                    ))}
-                </div>
-            )} */}
             {posts.length > 0 && (
                 <div className="max-w-[472px] w-full">
                     {posts.map((item) => (
                         <div key={item.post._id}>
-                            <RenderPost
+                            <PostItem
                                 postData={{
                                     author: item.author,
                                     post: item.post,
@@ -79,125 +45,3 @@ const Home = () => {
 };
 
 export default Home;
-
-const Stories = () => {
-    const sliderRef = useRef<HTMLDivElement>(null);
-
-    const [slidesToShow, setSlidesToShow] = useState(0);
-    const [oldSlide, setOldSlide] = useState(0);
-    const [activeSlide, setActiveSlide] = useState(0);
-    const [isShowCreatePost, setShowCreatePost] = useState(false);
-    const [stories, setStories] = useState<Story[] | []>([]);
-    useEffect(() => {}, []);
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const storiesRes = await axios.get('http://localhost:3000');
-    //             if (storiesRes) {
-    //                 setStories(storiesRes.data);
-    //             }
-    //         } catch (error) {
-    //             throw error;
-    //         }
-    //     };
-    //     fetchData();
-    // }, []);
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         const resp = await axios.post('http://localhost:3000/api/users', {
-    //             name: 'John Doe',
-    //             email: 'johnx12345@example.com',
-    //             avatar: 'https://i.pinimg.com/564x/85/f0/55/85f055dbe68bf317b09dbc5d4ec89bd9.jpg',
-    //             password: 'hashedpassword123',
-    //             bio: 'Hello, I am John Doe!',
-    //         });
-    //         console.log(resp);
-    //     };
-    //     fetchData();
-    // }, []);
-    // useEffect(() => {
-    //     const sliderElement = sliderRef.current;
-    //     const updateSlidesToShow = () => {
-    //         if (sliderElement) {
-    //             const slideWidth = sliderElement.offsetWidth;
-    //             if (slideWidth) {
-    //                 const calculatedSlidesToShow = Math.round(slideWidth / 90);
-    //                 setSlidesToShow(calculatedSlidesToShow);
-    //             }
-    //         }
-    //     };
-    //     updateSlidesToShow();
-    //     window.addEventListener('resize', updateSlidesToShow);
-    //     return () => {
-    //         window.removeEventListener('resize', updateSlidesToShow);
-    //     };
-    // }, []);
-
-    const SampleNextArrow = (props: any) => {
-        const { className, style, onClick } = props;
-        return (
-            <div
-                className={className}
-                style={{
-                    ...style,
-                    display: `${activeSlide >= stories.length - slidesToShow ? 'none' : 'block'}`,
-                }}
-                onClick={onClick}
-            />
-        );
-    };
-
-    const SamplePrevArrow = (props: any) => {
-        const { className, style, onClick } = props;
-        return (
-            <div
-                className={className}
-                style={{ ...style, display: `${activeSlide === 0 ? 'none' : 'block'}` }}
-                onClick={onClick}
-            />
-        );
-    };
-
-    const renderStory = (story: Story) => (
-        <div key={story._id} className="">
-            <div className="relative w-20 h-20 cursor-pointer shrink-0">
-                <span className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
-                <img src={story.story_url} alt="" className="rounded-full w-full h-full relative p-0.5" />
-            </div>
-        </div>
-    );
-
-    const settings = {
-        dots: true,
-        infinite: false,
-        speed: 500,
-        slidesToShow: Math.max(1, Math.min(slidesToShow, stories.length)),
-        slidesToScroll: 3,
-        beforeChange: (current: number, next: number) => {
-            setOldSlide(current);
-            setActiveSlide(next);
-        },
-        nextArrow: <SampleNextArrow />,
-        prevArrow: <SamplePrevArrow />,
-    };
-
-    return (
-        <>
-            <div ref={sliderRef}>
-                <Slider {...settings}>
-                    <div>
-                        <button
-                            title="Create"
-                            className="w-20 h-20 cursor-pointer border-2 dark:border-white border-black rounded-full flex items-center justify-center"
-                            onClick={() => setShowCreatePost(true)}
-                        >
-                            <BsPlus className="text-5xl" />
-                        </button>
-                    </div>
-                    {stories.length > 0 && stories.map((story) => renderStory(story))}
-                </Slider>
-            </div>
-            <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />
-        </>
-    );
-};

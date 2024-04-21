@@ -2,13 +2,13 @@ export const createUserValidationSchema = {
     email: {
         notEmpty: true,
         isEmail: true,
-        errorMessage: 'Email không hợp lệ',
+        errorMessage: 'Invalid email',
     },
     name: {
         notEmpty: true,
     },
     password: {
-        errorMessage: 'Password phải có ít nhất 6 ký tự',
+        errorMessage: 'Password must be at least 6 characters long',
         isLength: {
             options: { min: 6 },
         },
@@ -35,7 +35,7 @@ export const createUserValidationSchema = {
     'posts.*.image_url': {
         optional: true,
         isURL: true,
-        errorMessage: 'URL hình ảnh không hợp lệ',
+        errorMessage: 'Invalid image URL',
     },
     'posts.*.caption': {
         optional: true,
@@ -48,24 +48,10 @@ export const createUserValidationSchema = {
     'posts.*.comments.*.comment_text': {
         optional: true,
     },
-    'posts.*.comments.*.replies.*.comment_text': {
+    'posts.*.comments.**.replies.*.comment_text': {
         optional: true,
     },
     tags: {
-        optional: true,
-        isArray: true,
-    },
-    'stories.*.story_url': {
-        optional: true,
-        isURL: true,
-        errorMessage: 'URL truyện không hợp lệ',
-    },
-    'stories.*.story_date': {
-        optional: true,
-        isISO8601: true,
-        toDate: true,
-    },
-    'stories.*.viewers': {
         optional: true,
         isArray: true,
     },

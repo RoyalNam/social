@@ -12,13 +12,12 @@ import {
     BsCompassFill,
     BsHouse,
     BsHouseFill,
-    BsPersonCircle,
     BsPlusCircle,
     BsSearch,
 } from 'react-icons/bs';
-import Search from './Search';
 import Notifications from './Notifications';
-import CreatePost from '../CreatePost';
+import Search from './Search';
+import CreatePost from '../post/CreatePost';
 import { useAuthContextProvider } from '@/context/user';
 import SummaryAPI from '@/api';
 

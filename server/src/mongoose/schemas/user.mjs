@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-const replySchema = new Schema({
+const commentSchema = new Schema({
     _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
-    reply_text: { type: String },
+    comment_text: { type: String },
+    comment_date: { type: Date, default: Date.now },
 });
-
-replySchema.add({
-    replies: [replySchema],
+commentSchema.add({
+    replies: [commentSchema],
 });
 
 // Define Schema for User
@@ -34,25 +34,11 @@ const userSchema = new Schema({
             image_url: { type: String },
             caption: { type: String },
             post_date: { type: Date, default: Date.now },
-            comments: [
-                {
-                    _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
-                    comment_text: { type: String },
-                    replies: [replySchema],
-                },
-            ],
+            comments: [commentSchema],
             likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         },
     ],
     tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-    stories: [
-        {
-            _id: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
-            story_url: { type: String },
-            story_date: { type: Date, default: Date.now },
-            viewers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-        },
-    ],
 });
 
 // Define Schema for Tag

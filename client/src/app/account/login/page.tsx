@@ -1,10 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import InputCus from '@/components/InputCus';
 import Link from 'next/link';
-import SummaryAPI from '@/api';
-import axios from 'axios';
+import SummaryAPI, { loginLocal } from '@/api';
 
 const Login = () => {
     const router = useRouter();
@@ -14,19 +13,13 @@ const Login = () => {
         password: '',
     };
     const [formData, setFormData] = useState(initialData);
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         const resp = await axios.post('http://localhost:3000/api/users', {
-    //             name: 'John Doe',
-    //             email: 'johnx1234@example.com',
-    //             avatar: 'https://i.pinimg.com/564x/85/f0/55/85f055dbe68bf317b09dbc5d4ec89bd9.jpg',
-    //             password: 'hashedpassword123',
-    //             bio: 'Hello, I am John Doe!',
-    //         });
-    //         console.log(resp);
-    //     };
-    //     fetchData();
-    // }, []);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const isLogin = await loginLocal(formData);
+        if (!isLogin?.success) setErr(true);
+    };
+
     const handleInputChange = (name: string, value: string) => {
         setFormData((prevState) => ({
             ...prevState,
@@ -35,20 +28,6 @@ const Login = () => {
         setErr(false);
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post(SummaryAPI.auth.local, formData, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-        } catch (error: any) {
-            if (!error.response) window.location.href = 'http://localhost:3001/';
-            setErr(true);
-        }
-    };
     const redirectToRegister = () => {
         router.push('/account/register');
     };

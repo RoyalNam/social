@@ -6,11 +6,7 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
-import authRoute from './routes/auth.mjs';
-import postRoute from './routes/posts.mjs';
-import userRouter from './routes/users.mjs';
-import commentRouter from './routes/comments.mjs';
-import followRouter from './routes/follow.mjs';
+import router from './routes/index.mjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,7 +14,7 @@ dotenv.config();
 const app = express();
 
 mongoose
-    .connect('mongodb://localhost/MXH')
+    .connect('mongodb://localhost/MXH1')
     .then(() => console.log('connect to database'))
     .catch((err) => console.log(`Error: ${err}`));
 
@@ -61,11 +57,8 @@ app.get('/', (request, response) => {
     response.cookie('hello', 'world', { maxAge: 30000, signed: true });
     response.status(201).send({ msg: 'Hello World' });
 });
-app.use('/auth', authRoute);
-app.use(postRoute);
-app.use(userRouter);
-app.use(commentRouter);
-app.use(followRouter);
+
+app.use(router);
 
 const port = process.env.PORT || 3000;
 

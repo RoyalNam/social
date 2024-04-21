@@ -14,13 +14,13 @@ import {
     BsTagsFill,
     BsThreeDots,
 } from 'react-icons/bs';
-import { formatNumber } from '@/utils';
-import PostDetail from '@/components/PostDetail';
-import CreatePost from '@/components/CreatePost';
+import { countComments, formatNumber } from '@/utils';
+import PostDetail from '@/components/post/PostDetail';
+import CreatePost from '@/components/post/CreatePost';
 import { useAuthContextProvider } from '@/context/user';
-import { MinimalUser, Post, User } from '@/types';
+import { Comment, MinimalUser, Post, User } from '@/types';
 import axios from 'axios';
-import SummaryAPI from '@/api';
+import SummaryAPI, { fetchUserById } from '@/api';
 
 interface TabProps {
     icon: React.ReactNode;
@@ -37,12 +37,10 @@ const Profile = () => {
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     useEffect(() => {
         const fetchData = async () => {
-            if (userId == userAuth?._id) {
-                setUser(userAuth);
-            } else {
-                // const userRes = await axios.get(`${SummaryAPI.user}/${userId}`);
-                const userRes = await axios.get(`${SummaryAPI.user}/6621d4b6b57a43c4720e705c`);
-                if (userRes) setUser(userRes.data);
+            if (userId == userAuth?._id) setUser(userAuth);
+            else {
+                const user = await fetchUserById(userId as string);
+                if (user) setUser(user);
             }
         };
         fetchData();
@@ -200,7 +198,7 @@ const Profile = () => {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <BsChatDotsFill />
-                                                    <span>{formatNumber(item.comments.length)}</span>
+                                                    <span>{formatNumber(countComments(item.comments))}</span>
                                                 </div>
                                             </div>
                                         </div>

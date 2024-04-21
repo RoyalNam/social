@@ -1,4 +1,4 @@
-import { NOTIFICATION_DATA, Notification } from '@/test/notification';
+import { NOTIFICATION_DATA } from '@/test/notification';
 import { USERS_DATA } from '@/test/users';
 import { timeAgoFromPast } from '@/utils';
 import { useRouter } from 'next/navigation';

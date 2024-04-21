@@ -1,3 +1,5 @@
+import { Comment } from '@/types';
+
 export const formatNumber = (number: number) => {
     if (number < 1000) {
         return number.toString();
@@ -79,17 +81,30 @@ export const timeAgoFromPast = (pastTime: Date) => {
     var monthsAgo = Math.floor(daysAgo / 30);
     var yearsAgo = Math.floor(monthsAgo / 12);
 
+    // return yearsAgo + ' year' + (yearsAgo > 1 ? 's' : '') + ' ago';
+
     if (yearsAgo > 0) {
-        return yearsAgo + ' year' + (yearsAgo > 1 ? 's' : '') + ' ago';
+        return yearsAgo + ' year' + (yearsAgo > 1 ? 's' : '');
     } else if (monthsAgo > 0) {
-        return monthsAgo + ' month' + (monthsAgo > 1 ? 's' : '') + ' ago';
+        return monthsAgo + ' month' + (monthsAgo > 1 ? 's' : '');
     } else if (daysAgo > 0) {
-        return daysAgo + ' day' + (daysAgo > 1 ? 's' : '') + ' ago';
+        return daysAgo + ' day' + (daysAgo > 1 ? 's' : '');
     } else if (hoursAgo > 0) {
-        return hoursAgo + ' hour' + (hoursAgo > 1 ? 's' : '') + ' ago';
+        return hoursAgo + ' hour' + (hoursAgo > 1 ? 's' : '');
     } else if (minutesAgo > 0) {
-        return minutesAgo + ' min' + (minutesAgo > 1 ? 's' : '') + ' ago';
+        return minutesAgo + ' min' + (minutesAgo > 1 ? 's' : '');
     } else {
-        return secondsAgo + ' second' + (secondsAgo > 1 ? 's' : '') + ' ago';
+        return secondsAgo + ' second' + (secondsAgo > 1 ? 's' : '');
     }
+};
+
+export const countComments = (comments: Comment[]) => {
+    let count = 0;
+    comments.forEach((comment) => {
+        count++;
+        if (comment.replies && comment.replies.length > 0) {
+            count += countComments(comment.replies);
+        }
+    });
+    return count;
 };

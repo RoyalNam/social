@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { BsBookmark, BsChat, BsHeartFill, BsSend, BsThreeDots } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
-import { formatNumber } from '@/utils';
+import { countComments, formatNumber } from '@/utils';
 import { timeAgoFromPast } from '@/utils';
-import Modal from './Modal';
+import Modal from '../Modal';
 import { MinimalUser, PostProps } from '@/types';
 
 interface PostItemProps {
@@ -32,7 +32,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, setSele
                                 <button title="Comment" onClick={setSelectedPost}>
                                     <BsChat />
                                 </button>
-                                <span className="text-base">{formatNumber(post.comments.length)}</span>
+                                <span className="text-base">{formatNumber(countComments(post.comments))}</span>
                             </div>
                         </div>
                         <div className="flex gap-4">

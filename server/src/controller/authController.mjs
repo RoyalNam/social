@@ -5,13 +5,13 @@ class AuthController {
         if (req.user) {
             res.status(200).json({
                 success: true,
-                message: 'Đăng nhập thành công',
+                message: 'Login successfully!',
                 user: req.user,
             });
         } else {
             res.status(401).json({
                 success: false,
-                message: 'Không được phép',
+                message: 'Unauthorized',
             });
         }
     }
@@ -19,15 +19,14 @@ class AuthController {
     static handleLoginFailed(req, res) {
         res.status(401).json({
             success: false,
-            message: 'Đăng nhập thất bại',
+            message: 'Login failure!',
         });
     }
 
     static handleLogout(req, res) {
         req.logout((err) => {
             if (err) {
-                console.error(err);
-                return res.status(500).send('Lỗi khi đăng xuất');
+                return res.status(500).send('Logout failure!');
             }
             res.redirect(process.env.CLIENT_URL);
         });

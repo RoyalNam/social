@@ -35,13 +35,8 @@ interface Comment {
     _id: string;
     user: string;
     comment_text: string;
-    replies: Reply[];
-}
-interface Reply {
-    _id: string;
-    user: string;
-    reply_text: string;
-    replies: Reply[];
+    comment_date: string;
+    replies: Comment[];
 }
 
 interface Story {
@@ -64,4 +59,4 @@ export interface CommentProps {
     author: MinimalUser;
 }
 
-export type { MinimalUser, Reply, User, Post, Comment, Story, Tag };
+export type { MinimalUser, User, Post, Comment, Story, Tag };
