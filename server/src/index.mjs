@@ -8,10 +8,10 @@ import session from 'express-session';
 import passport from 'passport';
 import router from './routes/index.mjs';
 import dotenv from 'dotenv';
+import { app, server } from './socket/socket.mjs';
 
 dotenv.config();
 
-const app = express();
 
 mongoose
     .connect('mongodb://localhost/MXH1')
