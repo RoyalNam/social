@@ -5,6 +5,8 @@ import authRouter from './auth.mjs';
 import userRouter from './users.mjs';
 import followRouter from './follow.mjs';
 import commentRouter from './comments.mjs';
+import messageRouter from './message.mjs';
+
 
 const router = express.Router();
 
@@ -13,5 +15,7 @@ router.use(userRouter);
 router.use(postRouter);
 router.use(followRouter);
 router.use(commentRouter);
+router.use(messageRouter);
+
 
 export default router;
