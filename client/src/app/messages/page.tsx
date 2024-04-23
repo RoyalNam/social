@@ -1,56 +1,78 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BsCameraVideo, BsChatDots, BsInfoCircle, BsPencilSquare, BsTelephone, BsX } from 'react-icons/bs';
+import { BsCameraVideo, BsChatDots, BsInfoCircle, BsPencilSquare, BsSend, BsTelephone, BsX } from 'react-icons/bs';
 import Modal from '@/components/Modal';
-import { USERS_DATA } from '@/test/users';
+import { Message, MinimalUser } from '@/types';
+import { fetchUserBasicInfoById, getMessages, getUsersChat, sendMessage } from '@/api';
+import { useAuthContextProvider } from '@/context/user';
+import { error } from 'console';
 
 const Messages = () => {
+    const userAuth = useAuthContextProvider();
     const router = useRouter();
+    const inputRef = useRef<HTMLTextAreaElement>(null);
     const [isShowChatModel, setShowChatModel] = useState(false);
-    const CHAT_EXAMPLE = [
-        {
-            username: 'Alice',
-            txt: 'Chào bạn! Bạn đã làm gì trong ngày hôm nay?',
-            chat_date: new Date('2024-04-08T08:00:00'),
-        },
-        {
-            username: 'Bob',
-            txt: 'Chào Alice! Tôi đã đi làm và sau đó đi dạo trong công viên. Còn bạn?',
-            chat_date: new Date('2024-04-08T08:05:00'),
-        },
-        {
-            username: 'Alice',
-            txt: 'Ân nhưng tôi đã ở nhà và làm việc từ xa. Có một số vấn đề cần giải quyết.',
-            chat_date: new Date('2024-04-08T08:10:00'),
-        },
-        {
-            username: 'Bob',
-            txt: 'Hy vọng bạn sẽ giải quyết được chúng. Nếu bạn cần sự giúp đỡ, đừng ngần ngại nói với tôi.',
-            chat_date: new Date('2024-04-08T08:15:00'),
-        },
-        {
-            username: 'Alice',
-            txt: 'Cảm ơn bạn. Tôi sẽ nhớ điều đó.',
-            chat_date: new Date('2024-04-08T08:20:00'),
-        },
-        {
-            username: 'Bob',
-            txt: 'Không có vấn đề gì. Tôi luôn sẵn lòng giúp đỡ.',
-            chat_date: new Date('2024-04-08T08:25:00'),
-        },
-        {
-            username: 'Alice',
-            txt: 'Điều này thực sự làm cho tôi cảm thấy yên tâm.',
-            chat_date: new Date('2024-04-08T08:30:00'),
-        },
-        {
-            username: 'Bob',
-            txt: 'Đừng lo lắng. Chúng ta luôn ở đây để hỗ trợ lẫn nhau. Đừng lo lắng. Chúng ta luôn ở đây để hỗ trợ lẫn nhau. Đừng lo lắng. Chúng ta luôn ở đây để hỗ trợ lẫn nhau.',
-            chat_date: new Date('2024-04-08T08:35:00'),
-        },
-    ];
+    const [usersToChat, setUsersToChat] = useState<MinimalUser[]>([]);
+    const [userToChat, setUserToChat] = useState<MinimalUser | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const usersToChatData: string[] = await getUsersChat();
+                if (usersToChatData && usersToChatData.length > 0) {
+                    const promises = usersToChatData.map(async (item) => {
+                        try {
+                            const user = await fetchUserBasicInfoById(item);
+                            return user;
+                        } catch (error) {
+                            console.error('Error fetching user data:', error);
+                            return null;
+                        }
+                    });
+                    const userData = await Promise.all(promises);
+                    if (userData && userData.length > 0) {
+                        setUsersToChat(userData.filter((user) => user !== null) as MinimalUser[]); // Type assertion
+                    }
+                }
+            } catch (err) {
+                throw err;
+            }
+        };
+        fetchData();
+    }, []);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                if (userToChat) {
+                    const messagesResp = await getMessages({ userToChatId: userToChat._id });
+                    if (messagesResp) setMessages(messagesResp);
+                }
+            } catch (err) {
+                throw err;
+            }
+        };
+        fetchData();
+    }, [userToChat]);
+
+    const handleSendMessage = async () => {
+        try {
+            if (inputRef.current && inputRef.current.value.trim() != '' && userToChat) {
+                const sendMsg = await sendMessage({ receiverId: userToChat._id, message: inputRef.current.value });
+                if (sendMsg) {
+                    setMessages((prev) => [...prev, sendMsg]);
+                    inputRef.current.value = '';
+                }
+            }
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    const redirectUserProfile = (userId: string) => {
+        router.push(`/profile/${userId}`);
+    };
     const renderSidebar = () => (
         <div className="w-28 lg:w-96 flex flex-col mt-8 select-none">
             <div className="inline-flex justify-between items-center px-4">
@@ -64,34 +86,38 @@ const Messages = () => {
                     <span className="text-center text-sm">No messages found.</span>
                 </div>
             ) : (
-                <div className="overflow-y-scroll scroll_thin h-full pb-8">
-                    <div className="flex flex-col mt-4 items-center lg:items-start">
-                        {USERS_DATA.map((item) => (
-                            <div
-                                className="flex px-3 py-1.5 gap-2 hover:bg-black/20 dark:hover:bg-white/20 items-center cursor-pointer"
-                                key={item.user_id}
-                            >
-                                <img
-                                    src={item.avatar}
-                                    alt={item.username}
-                                    className="rounded-full w-14 h-14 object-cover"
-                                />
-                                <div className="hidden lg:block">
-                                    <h5 className="font-semibold">{item.name}</h5>
-                                    <span className="text-sm font-extralight line-clamp-1">
-                                        Private photos and messages to a friend or group.
-                                    </span>
+                usersToChat &&
+                usersToChat.length > 0 && (
+                    <div className="overflow-y-scroll scroll_thin h-full pb-8">
+                        <div className="flex flex-col mt-4 items-center lg:items-start">
+                            {usersToChat.map((item) => (
+                                <div
+                                    className="flex px-3 py-1.5 gap-2 hover:bg-black/20 dark:hover:bg-white/20 items-center cursor-pointer"
+                                    key={item._id}
+                                    onClick={() => setUserToChat(item)}
+                                >
+                                    <img
+                                        src={item.avatar && '/user.png'}
+                                        alt={item.name}
+                                        className="rounded-full w-14 h-14 object-cover"
+                                    />
+                                    <div className="hidden lg:block">
+                                        <h5 className="font-semibold">{item.name}</h5>
+                                        <span className="text-sm font-extralight line-clamp-1">
+                                            Private photos and messages to a friend or group.
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )
             )}
         </div>
     );
     const renderContent = () => (
         <div className="flex-1 flex border-l">
-            {false ? (
+            {!userToChat ? (
                 <div className="flex-1 flex h-full flex-col gap-2 justify-center items-center">
                     <span className="p-5 border-2 rounded-full block mb-6">
                         <BsChatDots className="text-5xl" />
@@ -111,13 +137,9 @@ const Messages = () => {
                 <div className=" flex-1 flex flex-col">
                     <div className="border-b border-black/30 dark:border-white/20 flex items-center justify-between px-4 py-2">
                         <div className="flex">
-                            <img
-                                src={USERS_DATA[0].avatar}
-                                alt=""
-                                className="rounded-full w-12 h-1w-12 cursor-pointer"
-                            />
+                            <img src={userToChat.avatar} alt="" className="rounded-full w-12 h-12 cursor-pointer" />
                             <div className="leading-4 ml-2 mt-2">
-                                <h5 className="font-semibold">{USERS_DATA[0].name}</h5>
+                                <h5 className="font-semibold">{userToChat.name}</h5>
                                 <span className="text-sm font-extralight">{'1h ago'}</span>
                             </div>
                         </div>
@@ -135,45 +157,56 @@ const Messages = () => {
                     </div>
                     <div className="flex-1 p-4 overflow-y-scroll scroll_thin">
                         <div className="flex flex-col items-center text-center mb-8">
-                            <img
-                                src={USERS_DATA[0].avatar}
-                                alt=""
-                                className="rounded-full w-16 h-1w-16 cursor-pointer"
-                            />
-                            <div className="leading-4 mt-2">
-                                <h5 className="font-semibold">{USERS_DATA[0].name}</h5>
-                                <span className="text-sm font-extralight">@{USERS_DATA[0].username}</span>
-                            </div>
+                            <img src={userToChat.avatar} alt="" className="rounded-full w-16 h-16 cursor-pointer" />
+                            <h5 className="font-semibold mt-1">{userToChat.name}</h5>
                             <button
                                 className="font-semibold text-sm px-3 py-0.5 mt-2 bg-white/20 rounded"
-                                onClick={() => router.push(`profile/${USERS_DATA[0].username}`)}
+                                onClick={() => redirectUserProfile(userToChat._id)}
                             >
                                 View Profile
                             </button>
                         </div>
                         <div className="flex gap-6 flex-col justify-end">
-                            {CHAT_EXAMPLE.map((item, idx) => renderText(idx, item.username == 'Bob', item.txt))}
+                            {messages.map((message) => renderText(message))}
                         </div>
                     </div>
 
-                    <div className="mb-4 mx-4 rounded-3xl p-3 border dark:border-white/20 overflow-hidden">
-                        <div
-                            contentEditable={true}
-                            className="resize-y w-full whitespace-pre-wrap break-words text-wrap scroll_thin overflow-y-auto max-h-32 bg-transparent outline-none"
-                        />
+                    <div className="mb-4 relative mx-4 flex items-end rounded-3xl border dark:border-white/20 overflow-hidden">
+                        <textarea
+                            title="message input"
+                            ref={inputRef}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSendMessage();
+                                    e.preventDefault();
+                                }
+                            }}
+                            onChange={(e) => {
+                                const textarea = e.target;
+                                if (textarea) {
+                                    textarea.style.height = 'auto';
+                                    textarea.style.height = textarea.scrollHeight + 'px';
+                                }
+                            }}
+                            className="w-full pl-4 pr-8 py-1 scroll_thin max-h-24 bg-transparent outline-none"
+                        ></textarea>
+
+                        <button title="send" className="absolute right-2 p-2 bottom-3" onClick={handleSendMessage}>
+                            <BsSend className="text-xl" />
+                        </button>
                     </div>
                 </div>
             )}
         </div>
     );
-    const renderText = (idx: number, isMe: boolean, txt: string) => (
-        <div key={idx} className="flex">
+    const renderText = (message: Message) => (
+        <div key={message._id} className="flex">
             <pre
                 className={`${
-                    isMe ? 'ml-auto bg-blue-500' : 'mr-auto bg-black/10 dark:bg-white/20'
+                    message.senderId == userAuth?._id ? 'ml-auto bg-blue-500' : 'mr-auto bg-black/10 dark:bg-white/20'
                 } text-wrap leading-4 max-w-[60%] rounded-xl px-3 py-2`}
             >
-                {txt}
+                {message.message}
             </pre>
         </div>
     );

@@ -18,7 +18,6 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, closePostDetail }) =>
     const { post } = postData;
     const commentTxtRef = useRef<HTMLTextAreaElement | null>(null);
     const [isDiscard, setDiscard] = useState(false);
-    const [comments, setComments] = useState<Comment[]>(post.comments); // State mới lưu trữ danh sách comment
 
     const handleCreateComment = async () => {
         try {
@@ -28,16 +27,12 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, closePostDetail }) =>
                     data: { comment_text: commentTxtRef.current?.value.toString() },
                 });
 
-                if (comment) {
-                    console.log('comment', comment);
-                    setComments((prevComments) => [comment.comment, ...prevComments]);
-                }
+                if (comment) console.log('comment', comment);
             }
         } catch (err) {
             throw err;
         }
     };
-    console.log('comment', comments);
 
     const handleDiscardCreate = () => {
         setDiscard(false);
@@ -74,24 +69,15 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, closePostDetail }) =>
                                 className="max-w-full max-h-full w-full h-auto object-cover"
                             />
                         </div>
-                        {comments.length > 0 ? (
+                        {post.comments.length > 0 ? (
                             <div className="border-b text-sm border-black/30 dark:border-white/20 py-4 my-3 flex-1 scroll_thin overflow-y-auto">
                                 <div className="flex flex-col ml-8">
-                                    {comments.map((item) => (
+                                    {post.comments.map((item) => (
                                         <RenderComment
                                             key={item._id}
                                             postId={post._id}
                                             commentId={item._id}
                                             comment={item}
-                                            updateComments={(updatedComment) => {
-                                                setComments((prevComments) =>
-                                                    prevComments.map((prevComment) =>
-                                                        prevComment._id === updatedComment._id
-                                                            ? updatedComment
-                                                            : prevComment,
-                                                    ),
-                                                );
-                                            }}
                                         />
                                     ))}
                                 </div>
@@ -151,12 +137,11 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, closePostDetail }) =>
 
 export default PostDetail;
 
-const RenderComment: React.FC<{
-    comment: Comment;
-    commentId: string;
-    postId: string;
-    updateComments: (updatedComment: Comment) => void;
-}> = ({ comment, commentId, postId, updateComments }) => {
+const RenderComment: React.FC<{ comment: Comment; commentId: string; postId: string }> = ({
+    comment,
+    commentId,
+    postId,
+}) => {
     const [showAllReplies, setShowAllReplies] = useState(false);
     const [userComment, setUserComment] = useState<MinimalUser | null>(null);
 
@@ -181,7 +166,6 @@ const RenderComment: React.FC<{
                     postId={postId}
                     isShowAll={showAllReplies}
                     setShowAll={() => setShowAllReplies(true)}
-                    updateComments={updateComments}
                 />
             )}
         </div>
@@ -195,8 +179,7 @@ const RenderItem: React.FC<{
     commentId: string;
     isShowAll: boolean;
     setShowAll: () => void;
-    updateComments: (updatedComment: Comment) => void;
-}> = ({ user, comment, commentId, postId, isShowAll, setShowAll, updateComments }) => {
+}> = ({ user, comment, commentId, postId, isShowAll, setShowAll }) => {
     const router = useRouter();
     const [isShow, setShow] = useState(false);
     const txtRef = useRef<HTMLTextAreaElement | null>(null);
@@ -211,14 +194,12 @@ const RenderItem: React.FC<{
                 },
             });
             console.log(resp);
-            if (resp) {
-                updateComments(resp);
-            }
         } catch (err) {
             throw err;
         }
     };
     const redirectUserProfile = () => {
+        console.log('user', user);
         router.push(`/profile/${user._id}`);
     };
 
@@ -266,13 +247,7 @@ const RenderItem: React.FC<{
                         <div>
                             {isShowAll &&
                                 comment.replies.map((reply, index) => (
-                                    <RenderComment
-                                        key={index}
-                                        postId={postId}
-                                        commentId={commentId}
-                                        comment={reply}
-                                        updateComments={updateComments}
-                                    />
+                                    <RenderComment key={index} postId={postId} commentId={commentId} comment={reply} />
                                 ))}
                             {!isShowAll && comment.replies.length > 0 && (
                                 <div className="inline-flex gap-1">

@@ -3,7 +3,8 @@ import MessageController from '../controller/messageController.mjs';
 
 const router = Router();
 
-router.get('/api/get/:id', MessageController.getMessages);
-router.post('/api/send/:id', MessageController.sendMessages);
+router.get('/api/message', MessageController.getUsersChat);
+router.get('/api/message/:id', MessageController.getMessages);
+router.post('/api/message/:id', MessageController.sendMessages);
 
 export default router;

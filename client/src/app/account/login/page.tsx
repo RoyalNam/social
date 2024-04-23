@@ -33,7 +33,6 @@ const Login = () => {
     };
     return (
         <div className="flex flex-col gap-4">
-            <button className="bg-red-500 p-4">HELLO</button>
             <div className="flex items-center flex-col gap-4">
                 <form action="" method="post" onSubmit={handleSubmit} className="flex flex-col gap-8">
                     <InputCus

@@ -11,6 +11,7 @@ const SummaryAPI = {
     },
     user: `${SERVER_DOMAIN}/api/users`,
     post: `${SERVER_DOMAIN}/api/posts`,
+    message: `${SERVER_DOMAIN}/api/message`,
 };
 
 const loginLocal = async (formData: { username: string; password: string }) => {
@@ -84,6 +85,32 @@ const replyComment = async ({ postId, commentId, data }: { postId: string; comme
     return resp.data;
 };
 
+const getUsersChat = async () => {
+    const resp = await axios.get(SummaryAPI.message, { withCredentials: true });
+    return resp.data;
+};
+
+const sendMessage = async ({ receiverId, message }: { receiverId: string; message: string }) => {
+    const resp = await axios.post(
+        `${SummaryAPI.message}/${receiverId}`,
+        {
+            message: message,
+        },
+        {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        },
+    );
+    return resp.data;
+};
+const getMessages = async ({ userToChatId }: { userToChatId: string }) => {
+    const resp = await axios.get(`${SummaryAPI.message}/${userToChatId}`, {
+        withCredentials: true,
+    });
+    return resp.data;
+};
 export {
     loginLocal,
     register,
@@ -91,6 +118,9 @@ export {
     fetchPosts,
     createPost,
     fetchUserBasicInfoById,
+    getUsersChat,
+    sendMessage,
+    getMessages,
     createComment,
     replyComment,
 };

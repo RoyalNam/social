@@ -14,8 +14,8 @@ interface User {
     followers: string[];
     posts: Post[];
     tags: string[];
-    stories: Story[];
 }
+
 interface MinimalUser {
     _id: string;
     name: string;
@@ -39,16 +39,21 @@ interface Comment {
     replies: Comment[];
 }
 
-interface Story {
-    _id: string;
-    story_url: string;
-    story_date: Date;
-    viewers: string[];
-}
-
 interface Tag {
     _id: string;
     name: string;
+}
+
+interface Message {
+    _id: string;
+    senderId: string;
+    receiverId: string;
+    message: string;
+}
+interface Conversation {
+    _id: string;
+    participants: string[];
+    message: string[];
 }
 export interface PostProps {
     author: MinimalUser;
@@ -59,4 +64,4 @@ export interface CommentProps {
     author: MinimalUser;
 }
 
-export type { MinimalUser, User, Post, Comment, Story, Tag };
+export type { MinimalUser, User, Post, Comment, Tag, Message, Conversation };
