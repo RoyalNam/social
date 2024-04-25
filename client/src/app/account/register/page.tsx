@@ -1,7 +1,7 @@
 'use client';
 import React, { FormEvent, useState } from 'react';
-import InputCus, { InputProps } from '@/components/InputCus';
 import { useRouter } from 'next/navigation';
+import InputCus, { InputProps } from '@/components/InputCus';
 import { register } from '@/api';
 
 const Register = () => {
@@ -20,36 +20,13 @@ const Register = () => {
             ...prevState,
             [name]: value,
         }));
-        switch (name) {
-            case 'fullName':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    fullName: validateFullName(value),
-                }));
-                break;
-            case 'email':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    email: validateEmail(value),
-                }));
-                break;
-            case 'password':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    password: validatePassword(value),
-                }));
-                break;
-            case 'confirmPassword':
-                setInputErrors((prevErrors) => ({
-                    ...prevErrors,
-                    confirmPassword: validateConfirmPassword(value, formData.password),
-                }));
-                break;
-            default:
-                break;
-        }
     };
-
+    const handleFocus = (name: string) => {
+        setInputErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: '',
+        }));
+    };
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const isFormValid = validateForm();
@@ -61,14 +38,9 @@ const Register = () => {
                     password: formData.password,
                 };
                 const isRegistered = await register(data);
-                if (isRegistered) {
-                    redirectToLogin();
-                } else {
-                    setErr(true);
-                }
-            } else {
-                setErr(true);
-            }
+                if (isRegistered) redirectToLogin();
+                else setErr(true);
+            } else setErr(true);
         } catch (error) {
             console.error('Error during registration:', error);
             setErr(true);
@@ -139,11 +111,13 @@ const Register = () => {
 
     const INPUTS: InputProps[] = [
         {
+            type: 'text',
             placeholder: 'Full name',
             value: formData.fullName,
             err: inputErrors.fullName,
             onChange: (value) => handleInputChange('fullName', value),
             onBlur: () => handleBlur('fullName', formData.fullName),
+            onFocus: () => handleFocus('fullName'),
         },
         {
             type: 'email',
@@ -151,6 +125,7 @@ const Register = () => {
             value: formData.email,
             err: inputErrors.email,
             onChange: (value) => handleInputChange('email', value),
+            onFocus: () => handleFocus('email'),
         },
         {
             type: 'password',
@@ -159,6 +134,7 @@ const Register = () => {
             err: inputErrors.password,
             onChange: (value) => handleInputChange('password', value),
             onBlur: () => handleBlur('password', formData.password),
+            onFocus: () => handleFocus('password'),
         },
         {
             type: 'password',
@@ -167,6 +143,7 @@ const Register = () => {
             err: inputErrors.confirmPassword,
             onChange: (value) => handleInputChange('confirmPassword', value),
             onBlur: () => handleBlur('confirmPassword', formData.confirmPassword),
+            onFocus: () => handleFocus('confirmPassword'),
         },
     ];
 

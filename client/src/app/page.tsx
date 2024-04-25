@@ -8,23 +8,34 @@ import PostItem from '@/components/post/PostItem';
 
 const Home = () => {
     const [posts, setPosts] = useState<PostProps[]>([]);
-    const [selectedPost, setSelectedPost] = useState<PostProps | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const posts = await fetchPosts();
-                if (posts) setPosts(posts.posts);
+                if (posts) {
+                    setPosts(posts.posts);
+                    setLoading(false);
+                }
             } catch (err) {
                 throw err;
             }
         };
         fetchData();
     }, []);
+    const updatePost = async (post: PostProps) => {
+        setPosts((prev) =>
+            prev.map((item) => {
+                if (item.post._id === post.post._id) return post;
+                else return item;
+            }),
+        );
+    };
 
     return (
         <MainLayout>
-            {posts.length > 0 && (
+            {!loading ? (
                 <div className="max-w-[472px] w-full">
                     {posts.map((item) => (
                         <div key={item.post._id}>
@@ -33,13 +44,12 @@ const Home = () => {
                                     author: item.author,
                                     post: item.post,
                                 }}
-                                setSelectedPost={() => setSelectedPost(item)}
+                                updatePost={updatePost}
                             />
                         </div>
                     ))}
                 </div>
-            )}
-            {selectedPost && <PostDetail postData={selectedPost} closePostDetail={() => setSelectedPost(null)} />}
+            ) : null}
         </MainLayout>
     );
 };

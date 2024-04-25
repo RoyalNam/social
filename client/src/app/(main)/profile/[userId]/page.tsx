@@ -18,9 +18,8 @@ import { countComments, formatNumber } from '@/utils';
 import PostDetail from '@/components/post/PostDetail';
 import CreatePost from '@/components/post/CreatePost';
 import { useAuthContextProvider } from '@/context/user';
-import { Comment, MinimalUser, Post, User } from '@/types';
-import axios from 'axios';
-import SummaryAPI, { fetchUserById } from '@/api';
+import { MinimalUser, Post, User } from '@/types';
+import { fetchUserById } from '@/api';
 
 interface TabProps {
     icon: React.ReactNode;
@@ -30,20 +29,31 @@ interface TabProps {
 
 const Profile = () => {
     const { userId } = useParams();
-    const userAuth = useAuthContextProvider();
+    const { user: userAuth } = useAuthContextProvider();
     const [tab, setTab] = useState('Posts');
     const [isShowCreatePost, setShowCreatePost] = useState(false);
     const [user, setUser] = useState<User | null>();
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [loading, setLoading] = useState(true);
     useEffect(() => {
         const fetchData = async () => {
-            if (userId == userAuth?._id) setUser(userAuth);
-            else {
-                const user = await fetchUserById(userId as string);
-                if (user) setUser(user);
+            try {
+                let user;
+                if (userAuth && userId === userAuth._id) user = userAuth;
+                else user = await fetchUserById(userId as string);
+
+                if (user) {
+                    setUser(user);
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
             }
         };
-        fetchData();
+
+        if (userId) {
+            fetchData();
+        }
     }, [userId, userAuth]);
 
     const renderTap = (tabItem: TabProps) => (
@@ -110,11 +120,7 @@ const Profile = () => {
         user && (
             <div>
                 <div className="flex gap-8 border-b border-white/20 flex-col md:flex-row">
-                    <img
-                        src={user.avatar ?? '/user.png'}
-                        alt=""
-                        className="dark:bg-white hidden md:block w-36 h-36 rounded-full"
-                    />
+                    <img src={user.avatar ?? '/user.png'} alt="" className="hidden md:block w-36 h-36 rounded-full" />
                     <div className="flex-1">
                         <div>
                             <div className="flex gap-3 justify-between">
@@ -122,7 +128,7 @@ const Profile = () => {
                                     <img
                                         src={user.avatar ?? '/user.png'}
                                         alt=""
-                                        className="dark:bg-white block md:hidden w-12 h-12 rounded-full"
+                                        className="block md:hidden w-12 h-12 rounded-full"
                                     />
                                     <div>
                                         <h5>{user.name}</h5>
@@ -227,6 +233,7 @@ const Profile = () => {
                 </div>
                 {selectedPost && (
                     <PostDetail
+                        updatePost={() => {}}
                         postData={{ post: selectedPost, author: getMinimalUser() as MinimalUser }}
                         closePostDetail={() => setSelectedPost(null)}
                     />

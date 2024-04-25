@@ -9,5 +9,6 @@ router.get('/api/:userId/posts/:postId', PostController.getPostByUser);
 router.delete('/api/posts/:postId', PostController.deletePost);
 
 router.get('/api/posts/', PostController.getRandomPosts);
+router.post('/api/:userId/posts/:postId/like', PostController.likePost);
 
 export default router;

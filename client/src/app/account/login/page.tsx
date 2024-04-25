@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import InputCus from '@/components/InputCus';
 import Link from 'next/link';
+import InputCus from '@/components/InputCus';
 import SummaryAPI, { loginLocal } from '@/api';
 
 const Login = () => {
@@ -17,7 +17,7 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const isLogin = await loginLocal(formData);
-        if (!isLogin?.success) setErr(true);
+        if (isLogin && !isLogin?.success) setErr(true);
     };
 
     const handleInputChange = (name: string, value: string) => {

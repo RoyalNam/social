@@ -12,7 +12,6 @@ import { app, server } from './socket/socket.mjs';
 
 dotenv.config();
 
-
 mongoose
     .connect('mongodb://localhost/MXH1')
     .then(() => console.log('connect to database'))

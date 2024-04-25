@@ -86,8 +86,8 @@ const Navbar = () => {
         {
             tit: 'Profile',
             to: `/profile/${user?._id}`,
-            icon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full dark:bg-white w-6 h-6" />,
-            actIcon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full dark:bg-white  w-6 h-6" />,
+            icon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full w-6 h-6" />,
+            actIcon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full  w-6 h-6" />,
         },
     ];
 

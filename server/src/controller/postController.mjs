@@ -134,6 +134,39 @@ class PostController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+
+    static async likePost(req, res) {
+        try {
+            const { userId, postId } = req.params;
+            isAuthenticated(req, res);
+            const currentUser = req.user;
+
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            const post = user.posts.find((post) => post._id.toString() === postId);
+            if (!post) {
+                return res.status(404).json({ message: 'Post not found' });
+            }
+
+            const isLiked = post.likes.includes(currentUser._id);
+
+            if (isLiked) post.likes = post.likes.filter((like) => like.toString() !== currentUser._id.toString());
+            else post.likes.push(currentUser._id);
+
+            await user.save();
+
+            res.status(200).json({
+                message: !isLiked ? 'Post has been liked' : 'Post has not been liked',
+                isLiked: !isLiked,
+            });
+        } catch (error) {
+            console.error('Error updating post:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }
 
 export default PostController;

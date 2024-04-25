@@ -56,14 +56,14 @@ class FollowController {
             if (!user || !followingUser) {
                 return res.status(404).json({ message: 'User or following user not found' });
             }
-
-            if (user.following.includes(followingUser._id)) {
-                return res.status(400).json({ message: 'User already follows this user' });
+            const isFollowing = user.following.includes(followingUser._id);
+            if (isFollowing) {
+                return res.status(400).json({ message: 'User already follows this user', isFollowing });
             }
 
             user.following.push(followingUser._id);
             await user.save();
-            res.status(200).json(user);
+            res.status(200).json({ isFollowing: !isFollowing });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
@@ -79,14 +79,15 @@ class FollowController {
             if (!user || !followingUser) {
                 return res.status(404).json({ message: 'User or following user not found' });
             }
+            const isFollowing = user.following.includes(followingUser._id);
 
-            if (!user.following.includes(followingUser._id)) {
-                return res.status(400).json({ message: 'User does not follow this user' });
+            if (!isFollowing) {
+                return res.status(400).json({ message: 'User does not follow this user', isFollowing });
             }
 
             user.following = user.following.filter((id) => id.toString() !== followingUser._id.toString());
             await user.save();
-            res.status(200).json(user);
+            res.status(200).json({ isFollowing: !isFollowing });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });

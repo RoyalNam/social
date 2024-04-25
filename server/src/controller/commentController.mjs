@@ -15,12 +15,12 @@ class CommentController {
             const currentUser = req.user;
             const post = await User.findOneAndUpdate(
                 { 'posts._id': postId },
-                { $push: { 'posts.$.comments': { user: currentUser._id, comment_text } } },
+                { $push: { 'posts.$.comments': { $each: [{ user: currentUser._id, comment_text }], $position: 0 } } },
                 { new: true },
-            ).populate('posts.comments.user', 'name avatar');
+            );
             if (!post) return handleNotFound(res, 'Post');
 
-            const newComment = post.posts.find((post) => post._id.toString() === postId).comments.slice(-1)[0];
+            const newComment = post.posts.find((post) => post._id.toString() === postId).comments[0];
             res.status(201).json({ message: 'Comment added successfully', comment: newComment });
         } catch (error) {
             console.error('Error creating comment:', error);
@@ -76,7 +76,6 @@ class CommentController {
             const { postId, commentId } = req.params;
             const { parentId, comment_text } = req.body;
             isAuthenticated(req, res);
-
             const currentUser = req.user;
             const user = await User.findOne({ 'posts._id': postId, 'posts.comments._id': commentId });
             if (!user) return handleNotFound(res, 'User not found');
@@ -90,7 +89,7 @@ class CommentController {
                     break;
                 }
             }
-            if (!targetPost || !targetComment) return handleNotFound(res, 'Post or Comment not found');
+            if (!targetPost || !targetComment) return handleNotFound(res, 'Post or Comment');
 
             let newReply;
             if (parentId) {
@@ -106,10 +105,10 @@ class CommentController {
                 };
 
                 const parentReplyToUpdate = findParentReply(targetComment.replies);
-                if (!parentReplyToUpdate) return handleNotFound(res, 'Parent reply not found');
+                if (!parentReplyToUpdate) return handleNotFound(res, 'Parent reply');
 
-                newReply = { user: currentUser._id, comment_text };
-                parentReplyToUpdate.replies.push(newReply);
+                parentReplyToUpdate.replies.push({ user: currentUser._id, comment_text });
+                newReply = parentReplyToUpdate.replies.slice(-1)[0];
             } else {
                 targetComment.replies.push({ user: currentUser._id, comment_text });
                 newReply = targetComment.replies.slice(-1)[0];

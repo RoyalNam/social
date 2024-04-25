@@ -8,11 +8,13 @@ export interface InputProps {
     err?: string;
     onChange: (value: string) => void;
     onBlur?: (value: string) => void;
+    onFocus?: () => void;
 }
 const InputCus = ({ item }: { item: InputProps }) => {
-    const [typeVal, setType] = useState(item.type);
+    const [typeVal, setType] = useState(item.type || 'text');
     const [isEmpty, setIsEmpty] = useState(true);
     const handleBlur = item.onBlur ?? (() => {});
+    const handleFocus = item.onFocus ?? (() => {});
 
     useEffect(() => {
         setIsEmpty(!item.value.trim());
@@ -26,8 +28,13 @@ const InputCus = ({ item }: { item: InputProps }) => {
                     placeholder={item.placeholder}
                     value={item.value}
                     required
-                    onChange={(e) => item.onChange(e.target.value.trim())}
+                    onChange={
+                        item.type === 'text'
+                            ? (e) => item.onChange(e.target.value.trimStart())
+                            : (e) => item.onChange(e.target.value.trim())
+                    }
                     onBlur={(e) => handleBlur(e.target.value.trim())}
+                    onFocus={handleFocus}
                     className="w-full px-4 pt-2 pb-1 bg-transparent outline-none"
                 />
                 {item.type === 'password' && !isEmpty && (

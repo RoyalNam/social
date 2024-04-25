@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { BsArrowLeft, BsImages, BsX } from 'react-icons/bs';
 import Modal from '../Modal';
-import { createPost } from '@/api';
+import { createPost, uploadImage } from '@/api';
 import { applyFilters, resizeImage } from '@/utils';
 
 interface RangeProps {
@@ -47,26 +47,46 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
 
             reader.onload = (e) => {
                 if (e.target) {
-                    const imageUrl = e.target.result as string;
+                    const imageStr = e.target.result as string;
                     const image = new Image();
                     image.onload = () => {
                         try {
                             const canvas = resizeImage(image);
-                            const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.7);
-                            setImageUrl(resizedImageUrl);
+                            const resizedImageStr = canvas.toDataURL('image/jpeg', 0.7);
+                            setImageUrl(resizedImageStr);
                             const newStep = stepsReverse.pop();
                             if (newStep) setStep([newStep]);
                         } catch (error) {
                             console.error('Error while resizing image:', error);
                         }
                     };
-                    image.src = imageUrl;
+                    image.src = imageStr;
                 }
             };
             reader.readAsDataURL(selectedFile);
         }
     };
+    const handleCreatePost = async () => {
+        if (imageUrl) {
+            try {
+                const filteredImageUrl = await applyFilters(imageUrl, filters);
+                const formData = new FormData();
+                const response = await fetch(filteredImageUrl);
+                const blob = await response.blob();
+                formData.append('filename', blob);
 
+                const uploadResponse = await uploadImage({ formData: formData });
+
+                const post = await createPost({
+                    image_url: uploadResponse.downloadURL,
+                    caption: captionRef.current?.value,
+                });
+                if (post) handleResetDefaults();
+            } catch (error) {
+                console.error('Error creating post:', error);
+            }
+        }
+    };
     const handleBack = () => {
         if (step[step.length - 1] === 'upload_file') setDiscard(true);
         else {
@@ -78,28 +98,10 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
 
     const handleNext = () => {
         const stepEnd = step[step.length - 1];
-        if (stepEnd === 'caption') handleCreate();
+        if (stepEnd === 'caption') handleCreatePost();
         else {
             const newSteps = [...step, stepsReverse.pop() || ''];
             setStep(newSteps);
-        }
-    };
-
-    const handleCreate = async () => {
-        if (imageUrl) {
-            try {
-                const filteredImageUrl = await applyFilters(imageUrl, filters);
-                const imgURL = filteredImageUrl;
-                handleResetDefaults();
-                const post = await createPost({
-                    image_url: imgURL,
-                    caption: captionRef.current?.value,
-                });
-
-                console.log(post);
-            } catch (error) {
-                console.error(error);
-            }
         }
     };
 

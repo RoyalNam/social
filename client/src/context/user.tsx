@@ -1,10 +1,16 @@
 'use client';
-import { User } from '@/types';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { User } from '@/types';
 
-const AuthContext = createContext<User | null>(null);
+interface AuthContextType {
+    user: User | null;
+    isAuthenticated: boolean;
+    updateUser: (updatedUser: User) => void;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
 
 const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -40,11 +46,25 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         fetchData();
     }, []);
 
-    return <AuthContext.Provider value={memoizedUser}>{children}</AuthContext.Provider>;
+    const updateUser = (updatedUser: User) => {
+        setUser(updatedUser);
+    };
+
+    const contextValue: AuthContextType = {
+        user: memoizedUser,
+        isAuthenticated,
+        updateUser,
+    };
+
+    return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
-const useAuthContextProvider = (): User | null => {
-    return useContext(AuthContext);
+const useAuthContextProvider = (): AuthContextType => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuthContextProvider must be used within an AuthContextProvider');
+    }
+    return context;
 };
 
 export { AuthContextProvider, useAuthContextProvider };

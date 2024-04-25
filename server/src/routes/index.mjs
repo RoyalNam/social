@@ -8,8 +8,6 @@ import commentRouter from './comments.mjs';
 import messageRouter from './message.mjs';
 import uploadRouter from './uploadImage.mjs';
 
-
-
 const router = express.Router();
 
 router.use('/auth', authRouter);
@@ -19,6 +17,5 @@ router.use(followRouter);
 router.use(commentRouter);
 router.use(messageRouter);
 router.use(uploadRouter);
-
 
 export default router;

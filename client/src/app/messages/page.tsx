@@ -4,12 +4,11 @@ import { useRouter } from 'next/navigation';
 import { BsCameraVideo, BsChatDots, BsInfoCircle, BsPencilSquare, BsSend, BsTelephone, BsX } from 'react-icons/bs';
 import Modal from '@/components/Modal';
 import { Message, MinimalUser } from '@/types';
-import { fetchUserBasicInfoById, getMessages, getUsersChat, sendMessage } from '@/api';
+import { fetchUsersBasicInfoById, getMessages, getUsersChat, sendMessage } from '@/api';
 import { useAuthContextProvider } from '@/context/user';
-import { error } from 'console';
 
 const Messages = () => {
-    const userAuth = useAuthContextProvider();
+    const { user: userAuth } = useAuthContextProvider();
     const router = useRouter();
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const [isShowChatModel, setShowChatModel] = useState(false);
@@ -21,19 +20,9 @@ const Messages = () => {
             try {
                 const usersToChatData: string[] = await getUsersChat();
                 if (usersToChatData && usersToChatData.length > 0) {
-                    const promises = usersToChatData.map(async (item) => {
-                        try {
-                            const user = await fetchUserBasicInfoById(item);
-                            return user;
-                        } catch (error) {
-                            console.error('Error fetching user data:', error);
-                            return null;
-                        }
-                    });
-                    const userData = await Promise.all(promises);
-                    if (userData && userData.length > 0) {
-                        setUsersToChat(userData.filter((user) => user !== null) as MinimalUser[]); // Type assertion
-                    }
+                    const userData = await fetchUsersBasicInfoById(usersToChatData);
+                    if (userData && userData.length > 0)
+                        setUsersToChat(userData.filter((user) => user !== null) as MinimalUser[]);
                 }
             } catch (err) {
                 throw err;
