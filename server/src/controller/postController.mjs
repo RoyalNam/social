@@ -15,11 +15,11 @@ class PostController {
                 user: currentUser._id,
             };
 
-            currentUser.posts.push(newPost);
+            currentUser.posts.unshift(newPost);
 
             await currentUser.save();
 
-            res.status(201).json({ message: 'Post created successfully', post: newPost });
+            res.status(201).json({ message: 'Post created successfully', post: currentUser.posts[0] });
         } catch (error) {
             console.error('Error creating post:', error);
             res.status(500).json({ message: 'Internal server error' });
@@ -100,7 +100,7 @@ class PostController {
 
     static async getRandomPosts(req, res) {
         try {
-            let numberOfPostsToShow = 10;
+            let numberOfPostsToShow = 5;
 
             if (req.body && req.body.numberOfPostsToShow) {
                 numberOfPostsToShow = req.body.numberOfPostsToShow;
@@ -164,6 +164,33 @@ class PostController {
             });
         } catch (error) {
             console.error('Error updating post:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+    static async savePost(req, res) {
+        try {
+            const { userId, postId } = req.body;
+            isAuthenticated(req, res);
+            const currentUser = req.user;
+
+            const index = currentUser.save_post.findIndex(
+                (item) => item.user_id.toString() === userId && item.post_id.toString() === postId,
+            );
+            if (index !== -1) {
+                currentUser.save_post.splice(index, 1);
+                await currentUser.save();
+                res.status(200).json({ message: 'Post removed from saved list', postId: postId, saved: false });
+            } else {
+                const newPostToSave = {
+                    user_id: userId,
+                    post_id: postId,
+                };
+                currentUser.save_post.push(newPostToSave);
+                await currentUser.save();
+                res.status(200).json({ message: 'Post saved successfully', post: newPostToSave, saved: true });
+            }
+        } catch (error) {
+            console.error('Error:', error);
             res.status(500).json({ message: 'Internal server error' });
         }
     }

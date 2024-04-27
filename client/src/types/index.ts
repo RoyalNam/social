@@ -13,6 +13,7 @@ interface User {
     following: string[];
     followers: string[];
     posts: Post[];
+    save_post: SavePost[];
     tags: string[];
 }
 
@@ -37,6 +38,10 @@ interface Comment {
     comment_text: string;
     comment_date: string;
     replies: Comment[];
+}
+interface SavePost {
+    user_id: string;
+    post_id: string;
 }
 
 interface Tag {
@@ -64,4 +69,4 @@ export interface CommentProps {
     author: MinimalUser;
 }
 
-export type { MinimalUser, User, Post, Comment, Tag, Message, Conversation };
+export type { MinimalUser, User, Post, Comment, Tag, Message, Conversation, SavePost };

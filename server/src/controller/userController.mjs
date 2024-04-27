@@ -46,6 +46,39 @@ class UserController {
             return response.status(500).send({ message: 'Internal server error' });
         }
     }
+    static async getRandomUsers(request, response) {
+        const userId = request.params.id;
+        const numberOfUsers = 2;
+        console.log('xxxxxxxx', userId);
+        try {
+            const currentUser = await User.findById(userId);
+            if (!currentUser) {
+                return response.status(404).send({ message: 'User not found' });
+            }
+
+            const followingIds = currentUser.following.map((user) => user.toString());
+
+            const usersNotFollowing = await User.find(
+                { _id: { $nin: [...followingIds, userId] } },
+                { name: 1, _id: 1, avatar: 1, bio: 1, email: 1 },
+            );
+
+            const randomIndexes = [];
+            while (randomIndexes.length < numberOfUsers) {
+                const randomIndex = Math.floor(Math.random() * usersNotFollowing.length);
+                if (!randomIndexes.includes(randomIndex)) {
+                    randomIndexes.push(randomIndex);
+                }
+            }
+
+            const randomUsers = randomIndexes.map((index) => usersNotFollowing[index]);
+
+            return response.status(200).send(randomUsers);
+        } catch (err) {
+            console.error(err);
+            return response.status(500).send({ message: 'Internal server error' });
+        }
+    }
 
     static async createUser(request, response) {
         const result = validationResult(request);
@@ -68,6 +101,7 @@ class UserController {
 
     static async updateUser(request, response) {
         const id = request.params.id;
+        const body = request.body;
         try {
             const updatedUser = await User.findByIdAndUpdate(id, body, { new: true });
             return response.status(200).send(updatedUser);

@@ -1,6 +1,7 @@
 'use client';
 import React, { useRef, useState } from 'react';
 import { BsArrowLeft, BsImages, BsX } from 'react-icons/bs';
+import { useAuthContextProvider } from '@/context/authUserContext';
 import Modal from '../Modal';
 import { createPost, uploadImage } from '@/api';
 import { applyFilters, resizeImage } from '@/utils';
@@ -13,6 +14,7 @@ interface RangeProps {
 const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const captionRef = useRef<HTMLTextAreaElement>(null);
+    const { authUser, updateAuthUser } = useAuthContextProvider();
     const [step, setStep] = useState<string[]>([]);
     const [stepsReverse, setStepsReverse] = useState(['caption', 'edit', 'upload_file']);
     const [isDiscard, setDiscard] = useState(false);
@@ -66,6 +68,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
             reader.readAsDataURL(selectedFile);
         }
     };
+
     const handleCreatePost = async () => {
         if (imageUrl) {
             try {
@@ -81,12 +84,19 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                     image_url: uploadResponse.downloadURL,
                     caption: captionRef.current?.value,
                 });
-                if (post) handleResetDefaults();
+                if (post && authUser) {
+                    console.log('post', post);
+                    const updatedUser = { ...authUser };
+                    updatedUser.posts.unshift(post.post);
+                    updateAuthUser(updatedUser);
+                    handleResetDefaults();
+                }
             } catch (error) {
                 console.error('Error creating post:', error);
             }
         }
     };
+
     const handleBack = () => {
         if (step[step.length - 1] === 'upload_file') setDiscard(true);
         else {

@@ -1,25 +1,24 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
     BsBookmark,
     BsBookmarkFill,
     BsCamera,
     BsCameraFill,
-    BsChatDotsFill,
-    BsHeartFill,
     BsPersonWorkspace,
     BsPlus,
     BsTags,
     BsTagsFill,
     BsThreeDots,
 } from 'react-icons/bs';
-import { countComments, formatNumber } from '@/utils';
 import PostDetail from '@/components/post/PostDetail';
 import CreatePost from '@/components/post/CreatePost';
-import { useAuthContextProvider } from '@/context/user';
-import { MinimalUser, Post, User } from '@/types';
-import { fetchUserById } from '@/api';
+import { useAuthContextProvider } from '@/context/authUserContext';
+import { MinimalUser, Post, PostProps, User } from '@/types';
+import { fetchUserBasicInfoById, fetchUserById, fetchUsersBasicInfoById, getPostById } from '@/api';
+import PostTile from '@/components/post/PostTile';
+import Modal from '@/components/Modal';
 
 interface TabProps {
     icon: React.ReactNode;
@@ -28,38 +27,108 @@ interface TabProps {
 }
 
 const Profile = () => {
+    const router = useRouter();
     const { userId } = useParams();
-    const { user: userAuth } = useAuthContextProvider();
+    const { authUser } = useAuthContextProvider();
     const [tab, setTab] = useState('Posts');
     const [isShowCreatePost, setShowCreatePost] = useState(false);
     const [user, setUser] = useState<User | null>();
-    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [selectedPost, setSelectedPost] = useState<PostProps | null>(null);
     const [loading, setLoading] = useState(true);
+    const [posts, setPosts] = useState<PostProps[]>([]);
+    const [savePosts, setSavePosts] = useState<PostProps[]>([]);
+    const [usersFollowing, setUsersFollowing] = useState<MinimalUser[]>([]);
+    const [usersFollower, setUsersFollower] = useState<MinimalUser[]>([]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                let user;
-                if (userAuth && userId === userAuth._id) user = userAuth;
-                else user = await fetchUserById(userId as string);
+                const fetchedUser =
+                    authUser && userId === authUser._id ? authUser : ((await fetchUserById(userId as string)) as User);
+                if (fetchedUser) {
+                    setUser(fetchedUser);
 
-                if (user) {
-                    setUser(user);
-                    setLoading(false);
+                    const mappedPosts = fetchedUser.posts.map((post) => ({
+                        author: {
+                            _id: fetchedUser._id,
+                            name: fetchedUser.name,
+                            avatar: fetchedUser.avatar,
+                        },
+                        post,
+                    }));
+
+                    setPosts(mappedPosts);
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
         if (userId) {
             fetchData();
         }
-    }, [userId, userAuth]);
+    }, [userId, authUser]);
+
+    useEffect(() => {
+        if (tab === 'Saved' || tab == 'Tagged') {
+            fetchSavePost();
+        }
+    }, [tab, posts]);
+
+    const fetchUsersFollower = async () => {
+        if (user) {
+            const userData = await fetchUsersBasicInfoById(user.followers);
+
+            if (userData && userData.length > 0) {
+                setUsersFollower(userData.filter((user) => user !== null) as MinimalUser[]);
+            }
+        }
+    };
+
+    const fetchUsersFollowing = async () => {
+        if (user) {
+            const userData = await fetchUsersBasicInfoById(user.following);
+
+            if (userData && userData.length > 0) {
+                setUsersFollowing(userData.filter((user) => user !== null) as MinimalUser[]);
+            }
+        }
+    };
+
+    const fetchSavePost = async () => {
+        try {
+            if (authUser && authUser.save_post.length > 0) {
+                const promises = authUser.save_post.map(async (item) => {
+                    const userData = await fetchUserBasicInfoById(item.user_id);
+                    const postData = await getPostById(item.user_id, item.post_id);
+                    return { author: userData, post: postData.post };
+                });
+                const savePostsData = await Promise.all(promises);
+                setSavePosts(savePostsData);
+            }
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const updatePost = async (post: PostProps) => {
+        setPosts((prev) =>
+            prev.map((item) => {
+                if (item.post._id === post.post._id) return post;
+                else return item;
+            }),
+        );
+        setSelectedPost(post);
+    };
 
     const renderTap = (tabItem: TabProps) => (
         <button
             key={tabItem.tit}
-            className={`flex items-center gap-1 px-4 py-3 relative z-10 ${tab == tabItem.tit ? 'font-bold' : ''}`}
+            className={`flex items-center gap-1 px-4 py-3 relative z-10 cursor-pointer ${
+                tab == tabItem.tit ? 'font-bold' : ''
+            }`}
             onClick={() => setTab(tabItem.tit)}
         >
             <span className="text-2xl">{tab == tabItem.tit ? tabItem.actIcon : tabItem.icon}</span>
@@ -68,20 +137,13 @@ const Profile = () => {
         </button>
     );
 
-    const renderInfo = (tit: string, count: number) => (
-        <li className="inline-flex gap-1">
-            <span className="font-semibold">{count}</span>
+    const renderInfo = (tit: string, count: number, onClick?: () => {}) => (
+        <li className="inline-flex gap-1" onClick={onClick}>
+            <span className="font-semibold cursor-pointer hover:underline">{count}</span>
             <span>{tit}</span>
         </li>
     );
-    const getMinimalUser = () => {
-        if (user)
-            return {
-                _id: user._id,
-                name: user.name,
-                avatar: user.avatar,
-            };
-    };
+
     const TABS = [
         {
             icon: <BsCamera />,
@@ -116,132 +178,197 @@ const Profile = () => {
     );
     const handleCreate = () => setShowCreatePost(true);
 
-    return (
-        user && (
-            <div>
-                <div className="flex gap-8 border-b border-white/20 flex-col md:flex-row">
-                    <img src={user.avatar ?? '/user.png'} alt="" className="hidden md:block w-36 h-36 rounded-full" />
-                    <div className="flex-1">
-                        <div>
-                            <div className="flex gap-3 justify-between">
-                                <div className="flex gap-3">
-                                    <img
-                                        src={user.avatar ?? '/user.png'}
-                                        alt=""
-                                        className="block md:hidden w-12 h-12 rounded-full"
-                                    />
-                                    <div>
-                                        <h5>{user.name}</h5>
-                                    </div>
-                                </div>
-                                {userId != userAuth?._id && (
-                                    <div className="flex gap-4 items-center text-sm">
-                                        <button className="bg-white text-pink-500 px-5 py-2 font-semibold rounded-md">
-                                            Follow
-                                        </button>
-                                        <button className="bg-pink-500 px-5 py-2 font-semibold rounded-md">
-                                            Message
-                                        </button>
-                                        <button title="More" className="p-2 rounded-md bg-slate-400">
-                                            <BsThreeDots />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            <pre className="text-sm my-2">{user.bio}</pre>
-                        </div>
-                        <ul className="flex gap-6 md:justify-start justify-around my-4">
-                            {renderInfo('posts', user.posts.length)}
-                            {renderInfo('following', user.following.length)}
-                            {renderInfo('follower', user.followers.length)}
-                        </ul>
-                        {userId === userAuth?._id && (
-                            <div className="flex mb-8">
-                                <div className="text-center flex flex-col gap-1 cursor-pointer" onClick={handleCreate}>
-                                    <span className="p-1 border rounded-full text-black/30 dark:text-white/30">
-                                        <BsPlus className="text-5xl" />
-                                    </span>
-                                    <span>New</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-                <div>
-                    <div className="flex justify-center">{TABS.map((item) => renderTap(item))}</div>
-                    {tab == 'Posts' &&
-                        (user.posts.length === 0 ? (
-                            <div className="text-center mb-8">
-                                {renderEmptyInfoTab(
-                                    <BsCamera />,
-                                    'Share photos',
-                                    'When you share photos, they will appear on your profile.',
-                                    handleCreate,
-                                )}
-                                <button className="text-blue-400 mt-4" onClick={handleCreate}>
-                                    Share your first photo
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="">
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
-                                    {user.posts.map((item) => (
-                                        <div
-                                            key={item._id}
-                                            className="relative group cursor-pointer"
-                                            onClick={() => setSelectedPost(item)}
-                                        >
-                                            <img
-                                                src={item.image_url}
-                                                alt=""
-                                                loading="lazy"
-                                                className="aspect-square object-cover"
-                                            />
-                                            <div className="absolute inset-0 hidden group-hover:flex items-center justify-center gap-3 bg-black/30 font-semibold">
-                                                <div className="flex items-center gap-1">
-                                                    <BsHeartFill />
-                                                    <span>{formatNumber(item.likes.length)}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <BsChatDotsFill />
-                                                    <span>{formatNumber(countComments(item.comments))}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    {tab == 'Tagged' && (
-                        <div>
-                            {renderEmptyInfoTab(
-                                <BsPersonWorkspace />,
-                                'Photos of you',
-                                "When people tag you in photos, they'll appear here.",
-                            )}
-                        </div>
-                    )}
-                    {tab == 'Saved' && (
-                        <div>
-                            {renderEmptyInfoTab(
-                                <BsBookmark />,
-                                'Save',
-                                "Save photos and videos that you want to see again. No one is notified, and only you can see what you've saved.",
-                            )}
-                        </div>
-                    )}
-                </div>
-                {selectedPost && (
-                    <PostDetail
-                        updatePost={() => {}}
-                        postData={{ post: selectedPost, author: getMinimalUser() as MinimalUser }}
-                        closePostDetail={() => setSelectedPost(null)}
-                    />
-                )}
-                <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />
-            </div>
-        )
-    );
+    return !loading
+        ? user && (
+              <div>
+                  <div className="flex gap-8 border-b border-white/20 flex-col md:flex-row">
+                      <img src={user.avatar ?? '/user.png'} alt="" className="hidden md:block w-36 h-36 rounded-full" />
+                      <div className="flex-1">
+                          <div>
+                              <div className="flex gap-3 justify-between">
+                                  <div className="flex gap-3">
+                                      <img
+                                          src={user.avatar ?? '/user.png'}
+                                          alt=""
+                                          className="block md:hidden w-12 h-12 rounded-full"
+                                      />
+                                      <div>
+                                          <h5>{user.name}</h5>
+                                      </div>
+                                  </div>
+                                  {userId != authUser?._id ? (
+                                      <div className="flex gap-4 items-center text-sm">
+                                          <button className="bg-white text-pink-500 px-5 py-2 font-semibold rounded-md">
+                                              Follow
+                                          </button>
+                                          <button className="bg-pink-500 px-5 py-2 font-semibold rounded-md">
+                                              Message
+                                          </button>
+                                          <button title="More" className="p-2 rounded-md bg-slate-400">
+                                              <BsThreeDots />
+                                          </button>
+                                      </div>
+                                  ) : (
+                                      <button
+                                          className="px-4 py-1 dark:bg-white/25 opacity-85 font-semibold hover:opacity-100 rounded-full"
+                                          onClick={() => router.push('/profile/edit')}
+                                      >
+                                          Edit profile
+                                      </button>
+                                  )}
+                              </div>
+                              <pre className="text-sm my-2">{user.bio}</pre>
+                          </div>
+                          <ul className="flex gap-6 md:justify-start justify-around my-4">
+                              {renderInfo('posts', user.posts.length)}
+                              {renderInfo('following', user.following.length, fetchUsersFollowing)}
+                              {renderInfo('follower', user.followers.length, fetchUsersFollower)}
+                          </ul>
+                          {userId === authUser?._id && (
+                              <div className="flex mb-8">
+                                  <div
+                                      className="text-center flex flex-col gap-1 cursor-pointer"
+                                      onClick={handleCreate}
+                                  >
+                                      <span className="p-1 border rounded-full text-black/30 dark:text-white/30">
+                                          <BsPlus className="text-5xl" />
+                                      </span>
+                                      <span>New</span>
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+                  </div>
+                  <div>
+                      <div className="flex justify-center">
+                          {TABS.map((item) =>
+                              item.tit === 'Saved' ? (
+                                  <>{userId === authUser?._id && renderTap(item)}</>
+                              ) : (
+                                  <>{renderTap(item)}</>
+                              ),
+                          )}
+                      </div>
+                      {tab == 'Posts' &&
+                          (posts.length === 0 ? (
+                              <div className="text-center mb-8">
+                                  {renderEmptyInfoTab(
+                                      <BsCamera />,
+                                      'Share photos',
+                                      'When you share photos, they will appear on your profile.',
+                                      handleCreate,
+                                  )}
+                                  <button className="text-blue-400 mt-4" onClick={handleCreate}>
+                                      Share your first photo
+                                  </button>
+                              </div>
+                          ) : (
+                              <div className="">
+                                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
+                                      {posts.map((item) => (
+                                          <PostTile
+                                              key={item.post._id}
+                                              post={item.post}
+                                              setSelectedPost={() => setSelectedPost(item)}
+                                          />
+                                      ))}
+                                  </div>
+                              </div>
+                          ))}
+                      {tab == 'Tagged' &&
+                          (savePosts.length === 0 ? (
+                              <div className="text-center mb-8">
+                                  {renderEmptyInfoTab(
+                                      <BsPersonWorkspace />,
+                                      'Photos of you',
+                                      "When people tag you in photos, they'll appear here.",
+                                  )}
+                              </div>
+                          ) : (
+                              <div className="">
+                                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
+                                      {savePosts.map((item) => (
+                                          <PostTile
+                                              key={item.post._id}
+                                              post={item.post}
+                                              setSelectedPost={() => setSelectedPost(item)}
+                                          />
+                                      ))}
+                                  </div>
+                              </div>
+                          ))}
+                      {tab == 'Saved' &&
+                          (savePosts.length === 0 ? (
+                              <div className="text-center mb-8">
+                                  {renderEmptyInfoTab(
+                                      <BsBookmark />,
+                                      'Save',
+                                      "Save photos and videos that you want to see again. No one is notified, and only you can see what you've saved.",
+                                  )}
+                              </div>
+                          ) : (
+                              <div className="">
+                                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
+                                      {savePosts.map((item) => (
+                                          <PostTile
+                                              key={item.post._id}
+                                              post={item.post}
+                                              setSelectedPost={() => setSelectedPost(item)}
+                                          />
+                                      ))}
+                                  </div>
+                              </div>
+                          ))}
+                  </div>
+                  {selectedPost && (
+                      <PostDetail
+                          updatePost={updatePost}
+                          postData={selectedPost}
+                          closePostDetail={() => setSelectedPost(null)}
+                      />
+                  )}
+                  <Modal show={usersFollower.length > 0} onClose={() => setUsersFollower([])}>
+                      <div className="w-96 z-50 flex flex-col bg-primary rounded overflow-hidden">
+                          {usersFollower &&
+                              usersFollower.map((item) => (
+                                  <div
+                                      key={item._id}
+                                      className="flex gap-1 items-center py-1.5 px-2 hover:bg-white/15 cursor-pointer"
+                                      onClick={() => router.push(`/profile/${item._id}`)}
+                                  >
+                                      <img
+                                          src={item.avatar ?? 'user.png'}
+                                          alt=""
+                                          className="w-8 h-8 rounded-full line-clamp-1"
+                                      />
+                                      <span className="">{item.name}</span>
+                                  </div>
+                              ))}
+                      </div>
+                  </Modal>
+                  <Modal show={usersFollowing.length > 0} onClose={() => setUsersFollowing([])}>
+                      <div className="w-96 z-50 flex flex-col bg-primary rounded overflow-hidden">
+                          {usersFollowing &&
+                              usersFollowing.map((item) => (
+                                  <div
+                                      key={item._id}
+                                      className="flex gap-1 items-center py-1.5 px-2 hover:bg-white/15 cursor-pointer"
+                                      onClick={() => router.push(`/profile/${item._id}`)}
+                                  >
+                                      <img
+                                          src={item.avatar ?? '/user.png'}
+                                          alt=""
+                                          className="w-8 h-8 rounded-full line-clamp-1"
+                                      />
+                                      <span className="">{item.name}</span>
+                                  </div>
+                              ))}
+                      </div>
+                  </Modal>
+                  <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />
+              </div>
+          )
+        : null;
 };
 
 export default Profile;

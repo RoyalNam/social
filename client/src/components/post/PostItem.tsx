@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { BsBookmark, BsChat, BsHeart, BsHeartFill, BsSend, BsThreeDots } from 'react-icons/bs';
+import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill, BsSend, BsThreeDots } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import { countComments, formatNumber } from '@/utils';
 import { timeAgoFromPast } from '@/utils';
 import Modal from '../Modal';
 import { MinimalUser, PostProps } from '@/types';
-import { useAuthContextProvider } from '@/context/user';
-import { fetchUsersBasicInfoById, followUser, toggleLikePost, unFollower } from '@/api';
+import { useAuthContextProvider } from '@/context/authUserContext';
+import { fetchUsersBasicInfoById, followUser, toggleLikePost, toggleSavePost, unFollower } from '@/api';
 import PostDetail from './PostDetail';
 
 interface PostItemProps {
@@ -16,28 +16,26 @@ interface PostItemProps {
 }
 
 const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updatePost }) => {
-    const { user: userAuth, updateUser } = useAuthContextProvider();
+    const { authUser, updateAuthUser } = useAuthContextProvider();
     const { author, post } = postData;
     const router = useRouter();
     const [isShowMores, setShowMores] = useState(false);
     const [usersLike, setUsersLike] = useState<MinimalUser[]>([]);
     const [isShow, setShow] = useState(false);
 
-    useEffect(() => {}, [userAuth]);
+    useEffect(() => {}, [authUser]);
 
     const handleLikePost = async () => {
         try {
-            if (postData) {
+            if (postData && authUser) {
                 const userLikePost = await toggleLikePost({ userId: author._id, postId: post._id });
-                if (userLikePost) {
-                    const updatedPost = {
-                        ...post,
-                        likes: userLikePost.isLiked
-                            ? [...post.likes, author._id]
-                            : post.likes.filter((id) => id !== author._id),
-                    };
-                    updatePost({ ...postData, post: updatedPost });
-                }
+                const updatedPost = {
+                    ...post,
+                    likes: userLikePost.isLiked
+                        ? [...post.likes, authUser._id]
+                        : post.likes.filter((id) => id !== authUser._id),
+                };
+                updatePost({ ...postData, post: updatedPost });
             }
         } catch (err) {
             throw err;
@@ -46,26 +44,48 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
 
     const handleFollowing = async () => {
         try {
-            if (userAuth) {
+            if (authUser) {
                 let following;
 
-                if (userAuth?.following.includes(author._id))
-                    following = await unFollower({ authId: userAuth._id, userId: author._id });
-                else following = await followUser({ authId: userAuth._id, userId: author._id });
-                const updatedUser = { ...userAuth };
+                if (authUser?.following.includes(author._id))
+                    following = await unFollower({ authId: authUser._id, userId: author._id });
+                else following = await followUser({ authId: authUser._id, userId: author._id });
+                const updatedUser = { ...authUser };
 
                 if (following.isFollowing) {
                     updatedUser.following.push(author._id);
                 } else {
                     updatedUser.following = updatedUser.following.filter((id) => id !== author._id);
                 }
-                updateUser(updatedUser);
+                updateAuthUser(updatedUser);
                 setShowMores(false);
             }
         } catch (err) {
             throw err;
         }
     };
+
+    const handleSavePost = async () => {
+        try {
+            if (authUser) {
+                const isSave = await toggleSavePost({ userId: author._id, postId: post._id });
+                const updatedUser = { ...authUser };
+
+                if (isSave.saved) {
+                    updatedUser.save_post.push({ user_id: author._id, post_id: post._id });
+                } else {
+                    updatedUser.save_post = updatedUser.save_post.filter(
+                        (item) => item.user_id != author._id && item.post_id !== post._id,
+                    );
+                }
+                updateAuthUser(updatedUser);
+                setShowMores(false);
+            }
+        } catch (err) {
+            throw err;
+        }
+    };
+
     const redirectUserProfile = () => router.push(`/profile/${author._id}`);
 
     const fetchUsersLike = async () => {
@@ -74,9 +94,10 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
             setUsersLike(userData.filter((user) => user !== null) as MinimalUser[]);
         }
     };
+
     const MORES = [
         {
-            tit: userAuth?.following.includes(author._id) ? 'UnFollow' : 'Follow',
+            tit: authUser?.following.includes(author._id) ? 'UnFollow' : 'Follow',
             onclick: handleFollowing,
         },
         {
@@ -87,8 +108,11 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
             },
         },
         {
-            tit: 'Share',
-            onclick: () => setShowMores(false),
+            tit: 'Save',
+            onclick: () => {
+                handleSavePost();
+                setShowMores(false);
+            },
         },
         {
             tit: 'About this account',
@@ -102,6 +126,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
             onclick: () => setShowMores(false),
         },
     ];
+
     const renderUserInfo = (
         <>
             <div className="flex justify-between items-center">
@@ -117,7 +142,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
                             <h4 className="hover:underline cursor-pointer font-semibold" onClick={redirectUserProfile}>
                                 {author.name}
                             </h4>
-                            {!userAuth?.following.includes(author._id) && (
+                            {authUser?._id != author._id && !authUser?.following.includes(author._id) && (
                                 <button className="text-blue-400 relative font-medium" onClick={handleFollowing}>
                                     Follow
                                     <span className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white"></span>
@@ -150,6 +175,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
             </Modal>
         </>
     );
+
     return (
         post && (
             <>
@@ -162,7 +188,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
                             <div className="flex gap-4">
                                 <div className="flex gap-1">
                                     <button onClick={handleLikePost}>
-                                        {userAuth && postData.post.likes.includes(userAuth?._id) ? (
+                                        {authUser && postData.post.likes.includes(authUser._id) ? (
                                             <BsHeartFill className="text-red-600" />
                                         ) : (
                                             <BsHeart />
@@ -180,11 +206,19 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <button title="Share">
+                                {/* <button title="Share">
                                     <BsSend />
-                                </button>
-                                <button title="Save">
-                                    <BsBookmark />
+                                </button> */}
+                                <button title="Save" onClick={handleSavePost}>
+                                    {authUser &&
+                                    authUser.save_post.some(
+                                        (item) =>
+                                            item.post_id === postData.post._id && item.user_id === postData.author._id,
+                                    ) ? (
+                                        <BsBookmarkFill className="text-yellow-500" />
+                                    ) : (
+                                        <BsBookmark />
+                                    )}
                                 </button>
                             </div>
                         </div>

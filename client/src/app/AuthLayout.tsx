@@ -1,14 +1,14 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useAuthContextProvider } from '@/context/user';
+import { useAuthContextProvider } from '@/context/authUserContext';
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
-    const { user: auth } = useAuthContextProvider();
+    const { authUser } = useAuthContextProvider();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (auth) setLoading(false);
-    }, [auth]);
+        if (authUser) setLoading(false);
+    }, [authUser]);
 
     return !loading ? children : null;
 };

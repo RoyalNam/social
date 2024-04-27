@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
+    BsArrowBarLeft,
     BsBell,
     BsBellFill,
     BsCameraVideo,
@@ -18,7 +19,7 @@ import {
 import Notifications from './Notifications';
 import Search from './Search';
 import CreatePost from '../post/CreatePost';
-import { useAuthContextProvider } from '@/context/user';
+import { useAuthContextProvider } from '@/context/authUserContext';
 import SummaryAPI from '@/api';
 
 interface NavProps {
@@ -32,10 +33,11 @@ interface NavProps {
 const Navbar = () => {
     const pathname = usePathname();
     const router = useRouter();
-    const user = useAuthContextProvider();
+    const { authUser } = useAuthContextProvider();
     const [isShowSearch, setShowSearch] = useState(false);
     const [isShowNotifications, setShowNotifications] = useState(false);
     const [isShowCreatePost, setShowCreatePost] = useState(false);
+    useEffect(() => {}, [authUser]);
     const NAV_LINK: NavProps[] = [
         {
             tit: 'Home',
@@ -85,9 +87,9 @@ const Navbar = () => {
         },
         {
             tit: 'Profile',
-            to: `/profile/${user?._id}`,
-            icon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full w-6 h-6" />,
-            actIcon: <img src={user?.avatar ?? '/user.png'} alt="" className="rounded-full  w-6 h-6" />,
+            to: `/profile/${authUser?._id}`,
+            icon: <img src={authUser?.avatar ?? '/user.png'} alt="" className="rounded-full w-6 h-6" />,
+            actIcon: <img src={authUser?.avatar ?? '/user.png'} alt="" className="rounded-full  w-6 h-6" />,
         },
     ];
 
@@ -160,9 +162,11 @@ const Navbar = () => {
             <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
-            <div className="hidden md:block">Setting</div>
-            <a href={SummaryAPI.auth.logout} className="hidden bg-red-400 md:block">
-                Logout
+            <a href={SummaryAPI.auth.logout} className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 md:inline-block">
+                <span className="lg:block hidden">Logout</span>
+                <button className="block lg:hidden" title="logout">
+                    <BsArrowBarLeft className="text-xl" />
+                </button>
             </a>
             {isShowSearch && (
                 <RenderSidebar>

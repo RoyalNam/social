@@ -1,20 +1,31 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BsCameraVideo, BsChatDots, BsInfoCircle, BsPencilSquare, BsSend, BsTelephone, BsX } from 'react-icons/bs';
+import {
+    BsArrowUpSquareFill,
+    BsCameraVideo,
+    BsChatDots,
+    BsInfoCircle,
+    BsPencilSquare,
+    BsTelephone,
+    BsX,
+} from 'react-icons/bs';
 import Modal from '@/components/Modal';
 import { Message, MinimalUser } from '@/types';
 import { fetchUsersBasicInfoById, getMessages, getUsersChat, sendMessage } from '@/api';
-import { useAuthContextProvider } from '@/context/user';
+import { useAuthContextProvider } from '@/context/authUserContext';
+import { useSocketContext } from '@/context/socketContext';
 
 const Messages = () => {
-    const { user: userAuth } = useAuthContextProvider();
+    const { authUser } = useAuthContextProvider();
+    const { onlineUsers, socket } = useSocketContext();
     const router = useRouter();
-    const inputRef = useRef<HTMLTextAreaElement>(null);
+    const inputRef = useRef<HTMLDivElement>(null);
     const [isShowChatModel, setShowChatModel] = useState(false);
     const [usersToChat, setUsersToChat] = useState<MinimalUser[]>([]);
     const [userToChat, setUserToChat] = useState<MinimalUser | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -32,6 +43,23 @@ const Messages = () => {
     }, []);
 
     useEffect(() => {
+        console.log('onlineUsers', onlineUsers);
+    }, [onlineUsers]);
+
+    useEffect(() => {
+        const handleMessage = (newMessage: any) => {
+            newMessage.shouldShake = true;
+            const sound = new Audio('/notification.mp3');
+            sound.play();
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+        };
+        socket?.on('newMessage', handleMessage);
+        return () => {
+            socket?.off('newMessage', handleMessage);
+        };
+    }, [socket, setMessages, messages]);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 if (userToChat) {
@@ -47,11 +75,11 @@ const Messages = () => {
 
     const handleSendMessage = async () => {
         try {
-            if (inputRef.current && inputRef.current.value.trim() != '' && userToChat) {
-                const sendMsg = await sendMessage({ receiverId: userToChat._id, message: inputRef.current.value });
+            if (inputRef.current && inputRef.current.innerText.trim() !== '' && userToChat) {
+                const sendMsg = await sendMessage({ receiverId: userToChat._id, message: inputRef.current.innerText });
                 if (sendMsg) {
                     setMessages((prev) => [...prev, sendMsg]);
-                    inputRef.current.value = '';
+                    inputRef.current.innerText = '';
                 }
             }
         } catch (err) {
@@ -62,6 +90,7 @@ const Messages = () => {
     const redirectUserProfile = (userId: string) => {
         router.push(`/profile/${userId}`);
     };
+
     const renderSidebar = () => (
         <div className="w-28 lg:w-96 flex flex-col mt-8 select-none">
             <div className="inline-flex justify-between items-center px-4">
@@ -85,12 +114,19 @@ const Messages = () => {
                                     key={item._id}
                                     onClick={() => setUserToChat(item)}
                                 >
-                                    <img
-                                        src={item.avatar && '/user.png'}
-                                        alt={item.name}
-                                        className="rounded-full w-14 h-14 object-cover"
-                                    />
-                                    <div className="hidden lg:block">
+                                    <div className="relative w-14 h-14">
+                                        <img
+                                            src={item.avatar ?? '/user.png'}
+                                            alt={item.name}
+                                            className="rounded-full w-full h-full object-cover"
+                                        />
+                                        {onlineUsers.includes(item._id) && (
+                                            <span className="absolute right-1 bottom-0 w-4 h-4 bg-black flex justify-center items-center rounded-full">
+                                                <span className="w-3.5 h-3.5 bg-green-600 rounded-full"></span>
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="hidden lg:block flex-1">
                                         <h5 className="font-semibold">{item.name}</h5>
                                         <span className="text-sm font-extralight line-clamp-1">
                                             Private photos and messages to a friend or group.
@@ -104,6 +140,7 @@ const Messages = () => {
             )}
         </div>
     );
+
     const renderContent = () => (
         <div className="flex-1 flex border-l">
             {!userToChat ? (
@@ -161,39 +198,43 @@ const Messages = () => {
                     </div>
 
                     <div className="mb-4 relative mx-4 flex items-end rounded-3xl border dark:border-white/20 overflow-hidden">
-                        <textarea
+                        <div
+                            contentEditable
                             title="message input"
                             ref={inputRef}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    handleSendMessage();
-                                    e.preventDefault();
+                                    if (!e.shiftKey) {
+                                        handleSendMessage();
+                                        e.preventDefault();
+                                    }
                                 }
                             }}
                             onChange={(e) => {
-                                const textarea = e.target;
-                                if (textarea) {
-                                    textarea.style.height = 'auto';
-                                    textarea.style.height = textarea.scrollHeight + 'px';
+                                const div = e.target as HTMLDivElement;
+                                if (div) {
+                                    div.style.height = 'auto';
+                                    div.style.height = div.scrollHeight + 'px';
                                 }
                             }}
-                            className="w-full pl-4 pr-8 py-1 scroll_thin max-h-24 bg-transparent outline-none"
-                        ></textarea>
+                            className="w-full pl-4 pr-8 py-2 scroll_thin overflow-y-auto max-h-24 bg-transparent outline-none"
+                        ></div>
 
-                        <button title="send" className="absolute right-2 p-2 bottom-3" onClick={handleSendMessage}>
-                            <BsSend className="text-xl" />
+                        <button title="send" className="absolute right-2 p-2 bottom-0" onClick={handleSendMessage}>
+                            <BsArrowUpSquareFill className="text-2xl" />
                         </button>
                     </div>
                 </div>
             )}
         </div>
     );
+
     const renderText = (message: Message) => (
         <div key={message._id} className="flex">
             <pre
                 className={`${
-                    message.senderId == userAuth?._id ? 'ml-auto bg-blue-500' : 'mr-auto bg-black/10 dark:bg-white/20'
-                } text-wrap leading-4 max-w-[60%] rounded-xl px-3 py-2`}
+                    message.senderId == authUser?._id ? 'ml-auto bg-blue-500' : 'mr-auto bg-black/10 dark:bg-white/15'
+                } text-wrap leading-4 max-w-[60%] rounded-3xl px-3 py-2`}
             >
                 {message.message}
             </pre>

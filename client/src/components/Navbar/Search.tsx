@@ -1,7 +1,46 @@
-import React from 'react';
+'use client';
+import { MinimalUser } from '@/types';
+import React, { useState, useEffect } from 'react';
 import { BsSearch, BsXLg } from 'react-icons/bs';
 
-const Search = () => {
+const Search: React.FC = () => {
+    const [searchValue, setSearchValue] = useState('');
+    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | undefined>(undefined);
+    const [foundUsers, setFoundUsers] = useState<MinimalUser[]>([]);
+
+    const handleSearch = async () => {
+        // Your search logic here
+        console.log('Searching for:', searchValue);
+    };
+
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            // Call handleSearch when Enter key is pressed
+            handleSearch();
+        }
+    };
+
+    useEffect(() => {
+        if (searchValue.trim() !== '') {
+            // Clear previous timeout
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            // Set new timeout
+            const id = setTimeout(handleSearch, 1200);
+            setTimeoutId(id as NodeJS.Timeout);
+        }
+        // Clear timeout on component unmount or when searchValue changes
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [searchValue]);
+
     return (
         <div className="flex flex-col h-full scroll_thin overflow-y-auto">
             <div className="border-b border-black/30 dark:border-white/20">
@@ -17,6 +56,9 @@ const Search = () => {
                         id=""
                         placeholder="Search"
                         className="flex-1 py-2 bg-transparent outline-none"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onKeyDown={handleKeyPress} // Listen for key press events
                     />
                 </div>
             </div>
@@ -50,6 +92,7 @@ const Search = () => {
         </div>
     );
 };
+
 export default Search;
 
 const TEST_DATA = [
@@ -61,7 +104,7 @@ const TEST_DATA = [
     },
     {
         id: 2,
-        name: 'Jane smith',
+        name: 'Jane Smith',
         username: 'jane_smith',
         avatar: '/logo.jpg',
     },

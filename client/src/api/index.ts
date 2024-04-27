@@ -43,6 +43,12 @@ const fetchUserById = async (id: string) => {
     const resp = await axios.get(`${SummaryAPI.user}/${id}`);
     return resp.data;
 };
+
+const updateUser = async (id: string, data: any) => {
+    const resp = await axios.put(`${SummaryAPI.user}/${id}`, data);
+    return resp.data;
+};
+
 const fetchUserBasicInfoById = async (id: string) => {
     const resp = await axios.get(`${SummaryAPI.user}/${id}/basic_info`);
     return resp.data;
@@ -60,7 +66,10 @@ const fetchUsersBasicInfoById = async (ids: string[]) => {
     const userData = await Promise.all(promises);
     return userData;
 };
-
+const getSuggestedUsers = async (id: string) => {
+    const resp = await axios.get(`${SummaryAPI.user}/${id}/suggested_user`);
+    return resp.data;
+};
 const fetchPosts = async (numberOfPostsToShow = 10) => {
     const resp = await axios.get(`${SummaryAPI.post}?numberOfPostsToShow=${numberOfPostsToShow}`);
     return resp.data;
@@ -76,8 +85,13 @@ const createPost = async (data: any) => {
     return resp.data;
 };
 
-const fetchPostById = async (id: string) => {
-    const resp = await axios.get(`${SummaryAPI.user}/${id}`);
+const getPostById = async (userId: string, postId: string) => {
+    const resp = await axios.get(`${SERVER_DOMAIN}/api/${userId}/posts/${postId}`);
+    return resp.data;
+};
+
+const toggleSavePost = async ({ userId, postId }: { userId: string; postId: string }) => {
+    const resp = await axios.post(`${SummaryAPI.post}/save`, { userId, postId }, { withCredentials: true });
     return resp.data;
 };
 
@@ -166,11 +180,15 @@ export {
     loginLocal,
     register,
     fetchUserById,
+    updateUser,
     fetchPosts,
     createPost,
+    getPostById,
+    toggleSavePost,
     fetchUserBasicInfoById,
     fetchUsersBasicInfoById,
     getUsersChat,
+    getSuggestedUsers,
     sendMessage,
     getMessages,
     createComment,

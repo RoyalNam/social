@@ -1,12 +1,12 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BsArrowReturnRight, BsSend, BsX } from 'react-icons/bs';
 import Modal from '../Modal';
 import { Comment, MinimalUser, PostProps } from '@/types';
-import { createComment, fetchUserBasicInfoById, replyComment } from '@/api';
 import { timeAgoFromPast } from '@/utils';
-import { useRouter } from 'next/navigation';
 import PostItem from './PostItem';
+import { createComment, fetchUserBasicInfoById, replyComment } from '@/api';
 
 export interface PostDetailProps {
     postData: PostProps | null;
@@ -20,9 +20,10 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
     const commentTxtRef = useRef<HTMLTextAreaElement | null>(null);
     const [isDiscard, setDiscard] = useState(false);
     useEffect(() => {}, [postData]);
+
     const handleCreateComment = async () => {
         try {
-            if (postData && commentTxtRef.current) {
+            if (postData && commentTxtRef.current && commentTxtRef.current.value.trim() != '') {
                 const comment = await createComment({
                     postId: post._id,
                     data: { comment_text: commentTxtRef.current?.value.toString() },
@@ -35,7 +36,6 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                         ...post,
                         comments: updatedComments,
                     };
-                    console.log('update', updatedPost);
 
                     updatePost({ author, post: updatedPost });
                     commentTxtRef.current.value = '';
@@ -228,7 +228,7 @@ const RenderItem: React.FC<{
     useEffect(() => {}, [comment]);
     const handleReply = async () => {
         try {
-            if (comment) {
+            if (comment && txtRef.current?.value.trim() != '') {
                 const resp = await replyComment({
                     postId: postId,
                     commentId: commentId,

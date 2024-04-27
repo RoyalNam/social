@@ -51,6 +51,14 @@ export const createUserValidationSchema = {
     'posts.*.comments.**.replies.*.comment_text': {
         optional: true,
     },
+    'save_post.*.user_id': {
+        optional: true,
+        isArray: true,
+    },
+    'save_post.*.post_id': {
+        optional: true,
+        isArray: true,
+    },
     tags: {
         optional: true,
         isArray: true,

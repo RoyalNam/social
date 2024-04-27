@@ -38,6 +38,12 @@ const userSchema = new Schema({
             likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         },
     ],
+    save_post: [
+        {
+            user_id: { type: Schema.Types.ObjectId, ref: 'User' },
+            post_id: { type: Schema.Types.ObjectId },
+        },
+    ],
     tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
 });
 
