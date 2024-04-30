@@ -6,9 +6,11 @@ import { timeAgoFromPast } from '@/utils';
 import Modal from '../Modal';
 import { MinimalUser, PostProps } from '@/types';
 import { useAuthContextProvider } from '@/context/authUserContext';
-import { fetchUsersBasicInfoById, followUser, toggleLikePost, toggleSavePost, unFollower } from '@/api';
 import PostDetail from './PostDetail';
 import UserListModal from '../UserListModal';
+import userApi from '@/api/modules/user.api';
+import postApi from '@/api/modules/post.api';
+import followApi from '@/api/modules/follow.api';
 
 interface PostItemProps {
     postData: PostProps;
@@ -30,7 +32,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
     const handleLikePost = async () => {
         try {
             if (postData && authUser) {
-                const userLikePost = await toggleLikePost({ userId: author._id, postId: post._id });
+                const userLikePost = await postApi.toggleLikePost({ userId: author._id, postId: post._id });
                 const updatedPost = {
                     ...post,
                     likes: userLikePost.isLiked
@@ -50,8 +52,8 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
                 let following;
 
                 if (authUser?.following.includes(author._id))
-                    following = await unFollower({ authId: authUser._id, userId: author._id });
-                else following = await followUser({ authId: authUser._id, userId: author._id });
+                    following = await followApi.unFollower({ authId: authUser._id, userId: author._id });
+                else following = await followApi.followUser({ authId: authUser._id, userId: author._id });
                 const updatedUser = { ...authUser };
 
                 if (following.isFollowing) {
@@ -70,7 +72,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
     const handleSavePost = async () => {
         try {
             if (authUser) {
-                const isSave = await toggleSavePost({ userId: author._id, postId: post._id });
+                const isSave = await postApi.toggleSavePost({ userId: author._id, postId: post._id });
                 const updatedUser = { ...authUser };
 
                 if (isSave.saved) {
@@ -92,7 +94,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
     const redirectUserProfile = () => router.push(`/profile/${author._id}`);
 
     const fetchUsersLike = async () => {
-        const userData = await fetchUsersBasicInfoById(post.likes);
+        const userData = await userApi.getBasicInfoByIds(post.likes);
         if (userData && userData.length > 0) {
             setUsersLike(userData.filter((user) => user !== null) as MinimalUser[]);
         }

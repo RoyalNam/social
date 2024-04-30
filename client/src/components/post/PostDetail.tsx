@@ -6,7 +6,8 @@ import Modal from '../Modal';
 import { Comment, MinimalUser, PostProps } from '@/types';
 import { timeAgoFromPast } from '@/utils';
 import PostItem from './PostItem';
-import { createComment, fetchUserBasicInfoById, replyComment } from '@/api';
+import userApi from '@/api/modules/user.api';
+import postApi from '@/api/modules/post.api';
 
 export interface PostDetailProps {
     postData: PostProps | null;
@@ -24,7 +25,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
     const handleCreateComment = async () => {
         try {
             if (postData && commentTxtRef.current && commentTxtRef.current.value.trim() != '') {
-                const comment = await createComment({
+                const comment = await postApi.createComment({
                     postId: post._id,
                     data: { comment_text: commentTxtRef.current?.value.toString() },
                 });
@@ -183,7 +184,7 @@ const RenderComment: React.FC<{
     useEffect(() => {
         const fetchData = async () => {
             if (comment && comment.user) {
-                const userComment = await fetchUserBasicInfoById(comment.user);
+                const userComment = await userApi.getBasicInfoById(comment.user);
                 if (userComment) setUserComment(userComment);
             }
         };
@@ -224,7 +225,7 @@ const RenderItem: React.FC<{
     const handleReply = async () => {
         try {
             if (comment && txtRef.current?.value.trim() != '') {
-                const resp = await replyComment({
+                const resp = await postApi.replyComment({
                     postId: postId,
                     commentId: commentId,
                     data: {

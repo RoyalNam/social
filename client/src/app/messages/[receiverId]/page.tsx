@@ -4,11 +4,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { BsArrowUpSquareFill, BsCameraVideo, BsInfoCircle, BsTelephone } from 'react-icons/bs';
 import { Message, MinimalUser } from '@/types';
 import { timeAgoFromPast } from '@/utils';
-import { fetchUserBasicInfoById, getMessages, sendMessage } from '@/api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import { useSocketContext } from '@/context/socketContext';
 import { formatDateTime } from '@/utils';
 import { useChatUsersContextProvider } from '@/context/chatUsersContext';
+import userApi from '@/api/modules/user.api';
+import messageApi from '@/api/modules/message.api';
 
 export default function Messages() {
     const router = useRouter();
@@ -25,9 +26,11 @@ export default function Messages() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const user = await fetchUserBasicInfoById(receiverId as string);
+                const user = await userApi.getBasicInfoById(receiverId as string);
+                console.log('user', user);
+
                 setUserToChat(user);
-                const messagesResp = await getMessages({
+                const messagesResp = await messageApi.getMessages({
                     userToChatId: receiverId as string,
                 });
                 if (messagesResp) setMessages(messagesResp);
@@ -59,7 +62,7 @@ export default function Messages() {
     const handleSendMessage = async () => {
         try {
             if (inputRef.current && inputRef.current.innerText.trim() !== '' && receiverId) {
-                const sendMsg = await sendMessage({
+                const sendMsg = await messageApi.sendMessage({
                     receiverId: receiverId as string,
                     message: inputRef.current.innerText,
                 });
@@ -84,7 +87,7 @@ export default function Messages() {
         if (target.scrollTop === 0) {
             try {
                 const lastMessageId = messages.length > 0 ? messages[messages.length - 1]._id : '';
-                const messagesResp = await getMessages({
+                const messagesResp = await messageApi.getMessages({
                     userToChatId: receiverId as string,
                     lastMessageId: lastMessageId,
                 });

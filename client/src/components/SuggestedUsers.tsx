@@ -1,9 +1,10 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { followUser, getSuggestedUsers, unFollower } from '@/api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import { MinimalUser } from '@/types';
 import { useRouter } from 'next/navigation';
+import userApi from '@/api/modules/user.api';
+import followApi from '@/api/modules/follow.api';
 
 const SuggestedUsers = () => {
     const router = useRouter();
@@ -15,7 +16,7 @@ const SuggestedUsers = () => {
         const fetchData = async () => {
             try {
                 if (authUser && isFetch) {
-                    const suggestedUsers = await getSuggestedUsers(authUser._id);
+                    const suggestedUsers = await userApi.getSuggestedUsers(authUser._id);
                     console.log('suggested', suggestedUsers);
                     setSuggestedUsers(suggestedUsers);
                 }
@@ -32,8 +33,8 @@ const SuggestedUsers = () => {
         try {
             if (authUser) {
                 const following = authUser.following.includes(author._id)
-                    ? await unFollower({ authId: authUser._id, userId: author._id })
-                    : await followUser({ authId: authUser._id, userId: author._id });
+                    ? await followApi.unFollower({ authId: authUser._id, userId: author._id })
+                    : await followApi.followUser({ authId: authUser._id, userId: author._id });
 
                 const updatedUser = { ...authUser };
                 if (following.isFollowing) {

@@ -18,9 +18,9 @@ import Notifications from './Notifications';
 import Search from './Search';
 import CreatePost from '../post/CreatePost';
 import { useAuthContextProvider } from '@/context/authUserContext';
-import SummaryAPI, { getNotifications } from '@/api';
 import { useSocketContext } from '@/context/socketContext';
 import { Notification } from '@/types';
+import userApi, { userEndpoint } from '@/api/modules/user.api';
 
 interface NavProps {
     tit: string;
@@ -43,7 +43,7 @@ const Navbar = () => {
         const fetchData = async () => {
             try {
                 if (authUser) {
-                    const notificationData = await getNotifications(authUser._id);
+                    const notificationData = await userApi.getNotifications(authUser._id);
                     console.log('notifications', notificationData);
                     setNotifications(notificationData.notifications);
                 }
@@ -206,7 +206,7 @@ const Navbar = () => {
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
             <a
-                href={SummaryAPI.auth.logout}
+                href={userEndpoint.auth.logout}
                 className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
             >
                 <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>

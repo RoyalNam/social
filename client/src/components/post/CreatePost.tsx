@@ -1,11 +1,12 @@
 'use client';
 import React, { useRef, useState } from 'react';
 import { BsArrowLeft, BsImages, BsX } from 'react-icons/bs';
+import { Oval } from 'react-loader-spinner';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import Modal from '../Modal';
-import { createPost, uploadImage } from '@/api';
 import { applyFilters, resizeImage } from '@/utils';
-import { Oval, RotatingLines } from 'react-loader-spinner';
+import otherApi from '@/api/modules/other.api';
+import postApi from '@/api/modules/post.api';
 
 interface RangeProps {
     tit: string;
@@ -81,9 +82,9 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                 const blob = await response.blob();
                 formData.append('filename', blob);
 
-                const uploadResponse = await uploadImage({ formData: formData });
+                const uploadResponse = await otherApi.uploadImage({ formData: formData });
 
-                const post = await createPost({
+                const post = await postApi.createPost({
                     image_url: uploadResponse.downloadURL,
                     caption: captionRef.current?.value,
                 });

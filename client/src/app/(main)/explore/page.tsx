@@ -1,9 +1,9 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { fetchPosts } from '@/api';
 import { PostProps } from '@/types';
 import PostTile from '@/components/post/PostTile';
 import PostDetail from '@/components/post/PostDetail';
+import postApi from '@/api/modules/post.api';
 
 const Explore = () => {
     const [posts, setPosts] = useState<PostProps[]>([]);
@@ -13,7 +13,7 @@ const Explore = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const posts = await fetchPosts();
+                const posts = await postApi.getPosts();
                 if (posts) {
                     setPosts(posts.posts);
                 }

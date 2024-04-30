@@ -2,7 +2,7 @@
 import React, { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import InputCus, { InputProps } from '@/components/InputCus';
-import { register } from '@/api';
+import userApi from '@/api/modules/user.api';
 
 const Register = () => {
     const router = useRouter();
@@ -37,7 +37,7 @@ const Register = () => {
                     email: formData.email,
                     password: formData.password,
                 };
-                const isRegistered = await register(data);
+                const isRegistered = await userApi.register(data);
                 if (isRegistered) redirectToLogin();
                 else setErr(true);
             } else setErr(true);

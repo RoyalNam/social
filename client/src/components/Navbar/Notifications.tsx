@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { timeAgoFromPast } from '@/utils';
 import { useRouter } from 'next/navigation';
 import { MinimalUser, Notification } from '@/types';
-import { fetchUserBasicInfoById } from '@/api';
+import userApi from '@/api/modules/user.api';
 
 const Notifications = ({ notifications }: { notifications: Notification[] }) => {
     const router = useRouter();
@@ -16,7 +16,7 @@ const Notifications = ({ notifications }: { notifications: Notification[] }) => 
         const fetchData = async () => {
             for (const notification of notifications) {
                 if (!displayedNotificationIds.includes(notification._id)) {
-                    const user = await fetchUserBasicInfoById(notification.sender);
+                    const user = await userApi.getBasicInfoById(notification.sender);
                     setUserMap((prevMap) => ({ ...prevMap, [notification.sender]: user }));
                     setDisplayedNotificationIds((prevIds) => [...prevIds, notification._id]);
                 }

@@ -1,4 +1,5 @@
 import passport from 'passport';
+const CLIENT_URL = 'http://localhost:3001/';
 
 class AuthController {
     static handleLoginSuccess(req, res) {
@@ -28,26 +29,26 @@ class AuthController {
             if (err) {
                 return res.status(500).send('Logout failure!');
             }
-            res.redirect(process.env.CLIENT_URL);
+            res.redirect(CLIENT_URL);
         });
     }
 
     static handleLocalAuth = passport.authenticate('local', {
-        successRedirect: process.env.CLIENT_URL,
+        successRedirect: CLIENT_URL,
         failureRedirect: '/auth/login/failed',
     });
 
     static handleGoogleAuth = passport.authenticate('google');
 
     static handleGoogleCallback = passport.authenticate('google', {
-        successRedirect: process.env.CLIENT_URL,
+        successRedirect: CLIENT_URL,
         failureRedirect: '/auth/login/failed',
     });
 
     static handleFacebookAuth = passport.authenticate('facebook');
 
     static handleFacebookCallback = passport.authenticate('facebook', {
-        successRedirect: process.env.CLIENT_URL,
+        successRedirect: CLIENT_URL,
         failureRedirect: '/auth/login/failed',
     });
 }

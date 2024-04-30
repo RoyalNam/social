@@ -9,7 +9,7 @@ import { useSocketContext } from '@/context/socketContext';
 import { formatNumber, timeAgoFromPast } from '@/utils';
 import Modal from '@/components/Modal';
 import { User } from '@/types';
-import { searchUsers } from '@/api';
+import userApi from '@/api/modules/user.api';
 
 export default function MessagesLayout({
     children,
@@ -84,7 +84,7 @@ export default function MessagesLayout({
 
     const handleSearch = async () => {
         try {
-            const users = await searchUsers(searchValue);
+            const users = await userApi.searchUsers(searchValue);
             setFoundUsers(users);
         } catch (error) {
             throw error;

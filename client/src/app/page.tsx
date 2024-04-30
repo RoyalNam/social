@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import MainLayout from './(main)/layout';
 import { PostProps } from '@/types';
-import { fetchPosts } from '@/api';
 import PostItem from '@/components/post/PostItem';
 import SuggestedUsers from '@/components/SuggestedUsers';
 import { Oval } from 'react-loader-spinner';
+import postApi from '@/api/modules/post.api';
 
 const Home = () => {
     const [posts, setPosts] = useState<PostProps[]>([]);
@@ -22,7 +22,7 @@ const Home = () => {
             if (fetchingPosts) return;
 
             setFetchingPosts(true);
-            const newPosts = await fetchPosts();
+            const newPosts = await postApi.getPosts();
             console.log('new post', newPosts.posts);
 
             if (newPosts && newPosts.posts.length > 0) {

@@ -13,7 +13,7 @@ import { app, server } from './socket/socket.mjs';
 dotenv.config();
 
 mongoose
-    .connect('mongodb://localhost/MXH')
+    .connect(process.env.MONGODB_URL)
     .then(() => console.log('connect to database'))
     .catch((err) => console.log(`Error: ${err}`));
 
@@ -59,7 +59,7 @@ app.get('/', (request, response) => {
 
 app.use(router);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);

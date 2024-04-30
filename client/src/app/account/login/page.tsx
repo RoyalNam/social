@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import InputCus from '@/components/InputCus';
-import SummaryAPI, { loginLocal } from '@/api';
+import userApi, { userEndpoint } from '@/api/modules/user.api';
 
 const Login = () => {
     const router = useRouter();
@@ -16,7 +16,7 @@ const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const isLogin = await loginLocal(formData);
+        const isLogin = await userApi.loginLocal(formData);
         if (isLogin && !isLogin?.success) setErr(true);
     };
 
@@ -57,10 +57,10 @@ const Login = () => {
                 </form>
                 <span className="text-sm">OR</span>
                 <div className="flex justify-center gap-2">
-                    <Link href={SummaryAPI.auth.google}>
+                    <Link href={userEndpoint.auth.google}>
                         <img src="/icons8-google.svg" alt="" className="w-10" />
                     </Link>
-                    <Link href={SummaryAPI.auth.facebook}>
+                    <Link href={userEndpoint.auth.facebook}>
                         <img src="/icons8-facebook.svg" alt="" className="w-10" />
                     </Link>
                 </div>

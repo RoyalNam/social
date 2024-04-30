@@ -1,8 +1,10 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { MinimalUser, UserActivity } from '@/types';
-import { fetchUsersBasicInfoById, getUserActivity, getUsersActivity, getUsersChat } from '@/api';
 import { useAuthContextProvider } from './authUserContext';
+import userApi from '@/api/modules/user.api';
+import messageApi from '@/api/modules/message.api';
+import otherApi from '@/api/modules/other.api';
 
 interface ChatUsersContextType {
     chatUsers: MinimalUser[];
@@ -22,11 +24,11 @@ const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) =
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const activeChatUserIds: string[] = await getUsersChat();
+                const activeChatUserIds: string[] = await messageApi.getUsersChat();
 
                 if (activeChatUserIds && activeChatUserIds.length > 0) {
-                    const chatUserData = await fetchUsersBasicInfoById(activeChatUserIds);
-                    const activeUserActivityData = await getUsersActivity(activeChatUserIds);
+                    const chatUserData = await userApi.getBasicInfoByIds(activeChatUserIds);
+                    const activeUserActivityData = await otherApi.getUsersActivity(activeChatUserIds);
                     setUsersActivity(activeUserActivityData);
 
                     if (chatUserData && chatUserData.length > 0)
@@ -42,7 +44,7 @@ const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) =
         if (chatUsersUpdated && chatUsers.length > 0) {
             const fetchData = async () => {
                 try {
-                    const userActivity = await getUserActivity({ userId: chatUsers[0]._id });
+                    const userActivity = await otherApi.getUserActivity({ userId: chatUsers[0]._id });
                     updateUsersActivity(userActivity);
                 } catch (err) {
                     console.error('Error fetching user activity:', err);

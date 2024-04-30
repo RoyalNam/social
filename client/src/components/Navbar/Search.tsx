@@ -1,10 +1,10 @@
 'use client';
-import { searchUsers } from '@/api';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { BsSearch, BsXLg } from 'react-icons/bs';
 import { User } from '@/types';
 import { formatNumber } from '@/utils';
-import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
-import { BsSearch, BsXLg } from 'react-icons/bs';
+import userApi from '@/api/modules/user.api';
 
 const Search: React.FC = () => {
     const router = useRouter();
@@ -14,7 +14,7 @@ const Search: React.FC = () => {
 
     const handleSearch = async () => {
         try {
-            const users = await searchUsers(searchValue);
+            const users = await userApi.searchUsers(searchValue);
             setFoundUsers(users);
         } catch (error) {
             throw error;
@@ -107,24 +107,3 @@ const Search: React.FC = () => {
 };
 
 export default Search;
-
-const TEST_DATA = [
-    {
-        id: 1,
-        name: 'John Doe',
-        username: 'john_doe',
-        avatar: '/logo.jpg',
-    },
-    {
-        id: 2,
-        name: 'Jane Smith',
-        username: 'jane_smith',
-        avatar: '/logo.jpg',
-    },
-    {
-        id: 3,
-        name: 'Laura',
-        username: 'laura',
-        avatar: '/logo.jpg',
-    },
-];

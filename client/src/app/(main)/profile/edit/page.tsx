@@ -2,9 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Oval } from 'react-loader-spinner';
-import { deleteUser, updateUser as handleUpdateUser, uploadImage } from '@/api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import Modal from '@/components/Modal';
+import userApi from '@/api/modules/user.api';
+import otherApi from '@/api/modules/other.api';
 
 const EditProfile = () => {
     const router = useRouter();
@@ -51,10 +52,10 @@ const EditProfile = () => {
                     const response = await fetch(updateProfile.avatar as string);
                     const blob = await response.blob();
                     formData.append('filename', blob);
-                    uploadResponse = await uploadImage({ formData: formData });
+                    uploadResponse = await otherApi.uploadImage({ formData: formData });
                 }
                 const avatarUrl = uploadResponse ? uploadResponse.downloadURL : updateProfile.avatar;
-                const updated = await handleUpdateUser(authUser._id, {
+                const updated = await userApi.updateUser(authUser._id, {
                     ...updateProfile,
                     avatar: avatarUrl,
                 });
@@ -80,7 +81,7 @@ const EditProfile = () => {
     const handleDeleteAccount = async () => {
         try {
             if (authUser) {
-                const isDelete = await deleteUser(authUser._id);
+                const isDelete = await userApi.deleteUser(authUser._id);
                 if (isDelete.status == 200) router.push('/account/login');
             }
         } catch (error) {

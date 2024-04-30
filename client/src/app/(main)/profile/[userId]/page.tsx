@@ -17,16 +17,11 @@ import PostDetail from '@/components/post/PostDetail';
 import CreatePost from '@/components/post/CreatePost';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import { MinimalUser, PostProps, User } from '@/types';
-import {
-    fetchUserBasicInfoById,
-    fetchUserById,
-    fetchUsersBasicInfoById,
-    followUser,
-    getPostById,
-    unFollower,
-} from '@/api';
 import PostTile from '@/components/post/PostTile';
 import UserListModal from '@/components/UserListModal';
+import userApi from '@/api/modules/user.api';
+import postApi from '@/api/modules/post.api';
+import followApi from '@/api/modules/follow.api';
 
 interface TabProps {
     icon: React.ReactNode;
@@ -52,7 +47,9 @@ const Profile = () => {
         const fetchData = async () => {
             try {
                 const fetchedUser =
-                    authUser && userId === authUser._id ? authUser : ((await fetchUserById(userId as string)) as User);
+                    authUser && userId === authUser._id
+                        ? authUser
+                        : ((await userApi.getUserById(userId as string)) as User);
                 if (fetchedUser) {
                     setUser(fetchedUser);
 
@@ -86,18 +83,22 @@ const Profile = () => {
     }, [tab, posts]);
 
     const fetchUsersFollower = async () => {
-        if (user) {
-            const userData = await fetchUsersBasicInfoById(user.followers);
+        try {
+            if (user) {
+                const userData = await userApi.getBasicInfoByIds(user.followers);
 
-            if (userData && userData.length > 0) {
-                setUsersFollower(userData.filter((user) => user !== null) as MinimalUser[]);
+                if (userData && userData.length > 0) {
+                    setUsersFollower(userData.filter((user) => user !== null) as MinimalUser[]);
+                }
             }
+        } catch (error) {
+            throw error;
         }
     };
 
     const fetchUsersFollowing = async () => {
         if (user) {
-            const userData = await fetchUsersBasicInfoById(user.following);
+            const userData = await userApi.getBasicInfoByIds(user.following);
 
             if (userData && userData.length > 0) {
                 setUsersFollowing(userData.filter((user) => user !== null) as MinimalUser[]);
@@ -110,8 +111,8 @@ const Profile = () => {
             if (authUser) {
                 if (authUser.save_post.length > 0) {
                     const promises = authUser.save_post.map(async (item) => {
-                        const userData = await fetchUserBasicInfoById(item.user_id);
-                        const postData = await getPostById(item.user_id, item.post_id);
+                        const userData = await userApi.getBasicInfoById(item.user_id);
+                        const postData = await postApi.getPostById(item.user_id, item.post_id);
                         return { author: userData, post: postData.post };
                     });
                     const savePostsData = await Promise.all(promises);
@@ -139,8 +140,8 @@ const Profile = () => {
                 let following;
 
                 if (authUser?.following.includes(userId as string))
-                    following = await unFollower({ authId: authUser._id, userId: userId as string });
-                else following = await followUser({ authId: authUser._id, userId: userId as string });
+                    following = await followApi.unFollower({ authId: authUser._id, userId: userId as string });
+                else following = await followApi.followUser({ authId: authUser._id, userId: userId as string });
                 const updatedUser = { ...authUser };
 
                 if (following.isFollowing) {
