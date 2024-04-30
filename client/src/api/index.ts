@@ -49,6 +49,11 @@ const updateUser = async (id: string, data: any) => {
     return resp.data;
 };
 
+const deleteUser = async (id: string) => {
+    const resp = await axios.delete(`${SummaryAPI.user}/${id}`);
+    return resp;
+};
+
 const fetchUserBasicInfoById = async (id: string) => {
     const resp = await axios.get(`${SummaryAPI.user}/${id}/basic_info`);
     return resp.data;
@@ -140,13 +145,35 @@ const sendMessage = async ({ receiverId, message }: { receiverId: string; messag
     );
     return resp.data;
 };
-const getMessages = async ({ userToChatId }: { userToChatId: string }) => {
-    const resp = await axios.get(`${SummaryAPI.message}/${userToChatId}`, {
+const getMessages = async ({ userToChatId, lastMessageId }: { userToChatId: string; lastMessageId?: string }) => {
+    const url = `${SummaryAPI.message}/${userToChatId}?${lastMessageId ? `lastMessageId=${lastMessageId}` : ''}`;
+    const resp = await axios.get(url, {
         withCredentials: true,
     });
     return resp.data;
 };
 
+const getUserActivity = async ({ userId }: { userId: string }) => {
+    const resp = await axios.get(`${SERVER_DOMAIN}/api/activity/${userId}`);
+    return resp.data;
+};
+const getUsersActivity = async (ids: string[]) => {
+    const promises = ids.map(async (id) => {
+        try {
+            const user = await getUserActivity({ userId: id });
+            return user;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    });
+    const usersActivity = await Promise.all(promises);
+    return usersActivity;
+};
+const getNotifications = async (userId: string) => {
+    const resp = await axios.get(`${SummaryAPI.user}/${userId}/notifications`, { withCredentials: true });
+    return resp.data;
+};
 const uploadImage = async ({ formData }: { formData: FormData }) => {
     const resp = await axios.post(SummaryAPI.uploadImage, formData, {
         headers: {
@@ -176,11 +203,16 @@ const unFollower = async ({ authId, userId }: { authId: string; userId: string }
     return resp.data;
 };
 
+const searchUsers = async (val: string) => {
+    const resp = await axios.get(`${SummaryAPI.user}?filter=name&value=${val}`);
+    return resp.data;
+};
 export {
     loginLocal,
     register,
     fetchUserById,
     updateUser,
+    deleteUser,
     fetchPosts,
     createPost,
     getPostById,
@@ -188,6 +220,9 @@ export {
     fetchUserBasicInfoById,
     fetchUsersBasicInfoById,
     getUsersChat,
+    getUserActivity,
+    getNotifications,
+    getUsersActivity,
     getSuggestedUsers,
     sendMessage,
     getMessages,
@@ -199,6 +234,7 @@ export {
     removeFollower,
     followUser,
     unFollower,
+    searchUsers,
 };
 
 export default SummaryAPI;

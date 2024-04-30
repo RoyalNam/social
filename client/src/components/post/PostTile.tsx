@@ -5,7 +5,7 @@ import { countComments, formatNumber } from '@/utils';
 
 const PostTile = ({ post, setSelectedPost }: { post: Post; setSelectedPost: () => void }) => {
     return (
-        <div className="relative group cursor-pointer" onClick={setSelectedPost}>
+        <div className="relative group cursor-pointer text-white" onClick={setSelectedPost}>
             <img src={post.image_url} alt="" loading="lazy" className="aspect-square object-cover" />
             <div className="absolute inset-0 hidden group-hover:flex items-center justify-center gap-3 bg-black/30 font-semibold">
                 <div className="flex items-center gap-1">

@@ -5,6 +5,7 @@ import { useAuthContextProvider } from '@/context/authUserContext';
 import Modal from '../Modal';
 import { createPost, uploadImage } from '@/api';
 import { applyFilters, resizeImage } from '@/utils';
+import { Oval, RotatingLines } from 'react-loader-spinner';
 
 interface RangeProps {
     tit: string;
@@ -19,6 +20,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
     const [stepsReverse, setStepsReverse] = useState(['caption', 'edit', 'upload_file']);
     const [isDiscard, setDiscard] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
+    const [isPostCreated, setIsPostCreated] = useState(true);
 
     const initialFilters = {
         brightness: 50,
@@ -72,6 +74,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
     const handleCreatePost = async () => {
         if (imageUrl) {
             try {
+                setIsPostCreated(false);
                 const filteredImageUrl = await applyFilters(imageUrl, filters);
                 const formData = new FormData();
                 const response = await fetch(filteredImageUrl);
@@ -93,6 +96,8 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                 }
             } catch (error) {
                 console.error('Error creating post:', error);
+            } finally {
+                setIsPostCreated(true);
             }
         }
     };
@@ -161,7 +166,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                 </div>
             )}
             {step[step.length - 1] === 'caption' && (
-                <div className="p-3 bg-gray-400 dark:bg-[#334155]">
+                <div className="p-3 bg-black/10 dark:bg-[#334155]">
                     <textarea
                         ref={captionRef}
                         name=""
@@ -194,9 +199,11 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                             </button>
                         )}
                         {step.length < 2 ? (
-                            <h5 className="flex-1">Upload Photo</h5>
+                            <h5 className="flex-1 font-semibold">Upload Photo</h5>
                         ) : (
-                            <h5 className="flex-1">{step[step.length - 1] === 'edit' ? 'Edit' : 'Permission'}</h5>
+                            <h5 className="flex-1 font-semibold">
+                                {step[step.length - 1] === 'edit' ? 'Edit' : 'Permission'}
+                            </h5>
                         )}
                         {imageUrl && (
                             <button className="text-blue-400" onClick={handleNext}>
@@ -225,7 +232,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                                         className="absolute right-3 top-3 p-1 rounded-full bg-black/75 cursor-pointer"
                                         onClick={handleResetSteps}
                                     >
-                                        <BsX className="text-2xl" />
+                                        <BsX className="text-2xl text-white" />
                                     </span>
                                 </div>
                                 {stepsHandler}
@@ -254,7 +261,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
             </Modal>
             <Modal show={isDiscard} onClose={() => setDiscard(false)}>
                 <div className="z-50">
-                    <div className="bg-primary w-96 text-center text-sm p-4 flex flex-col gap-2 rounded-xl">
+                    <div className="bg-white dark:bg-primary w-96 text-center text-sm p-4 flex flex-col gap-2 rounded-xl">
                         <div className="py-4">
                             <h6 className="text-xl mb-1">Discard post?</h6>
                             <span>If you leave, your edits won't be saved.</span>
@@ -269,6 +276,21 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                             Cancel
                         </button>
                     </div>
+                </div>
+            </Modal>
+            <Modal show={!isPostCreated} onClose={() => {}}>
+                <div className="z-40 text-white flex flex-col items-center justify-center">
+                    <Oval
+                        visible={true}
+                        height="50"
+                        width="50"
+                        color="#fff"
+                        ariaLabel="oval-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                        secondaryColor="#ccc"
+                    />
+                    <span className="text-sm font-medium mt-2">Creating post...</span>
                 </div>
             </Modal>
         </>

@@ -51,33 +51,41 @@ const SuggestedUsers = () => {
     return (
         authUser && (
             <div className="">
-                <h5>suggested</h5>
+                <h5 className="font-semibold text-xl mb-4">Suggested</h5>
                 <div className="flex flex-col">
-                    {suggestedUsers.map((item) => (
-                        <div
-                            key={item._id}
-                            className="flex justify-between px-4 py-2 rounded items-center hover:bg-white/15 cursor-pointer"
-                            onClick={() => router.push(`/profile/${item._id}`)}
-                        >
-                            <div className="flex flex-1 items-center gap-2">
-                                <img src={item.avatar ?? '/user.png'} alt="" className="w-12 block rounded-full h-12" />
-                                <h5>{item.name}</h5>
+                    {suggestedUsers.length > 0 ? (
+                        suggestedUsers.map((item) => (
+                            <div
+                                key={item._id}
+                                className="flex justify-between px-4 py-2 rounded items-center hover:bg-white/15 cursor-pointer"
+                                onClick={() => router.push(`/profile/${item._id}`)}
+                            >
+                                <div className="flex flex-1 items-center gap-2">
+                                    <img
+                                        src={item.avatar ?? '/user.png'}
+                                        alt=""
+                                        className="w-12 block rounded-full h-12"
+                                    />
+                                    <h5>{item.name}</h5>
+                                </div>
+                                <div>
+                                    <button
+                                        className={`${
+                                            authUser.following.includes(item._id) && 'text-red-400'
+                                        } px-4 py-1 rounded-full font-semibold opacity-85 min-w-[105px] hover:opacity-100 bg-black/20 dark:bg-white/15`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleFollowing(item);
+                                        }}
+                                    >
+                                        {authUser.following.includes(item._id) ? 'Following' : 'Follow'}
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <button
-                                    className={`${
-                                        authUser.following.includes(item._id) && 'text-red-400'
-                                    } px-4 py-1 rounded-full font-semibold opacity-85 min-w-[105px] hover:opacity-100 bg-black/20 dark:bg-white/15`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleFollowing(item);
-                                    }}
-                                >
-                                    {authUser.following.includes(item._id) ? 'Following' : 'Follow'}
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <div>No user suggested.</div>
+                    )}
                 </div>
             </div>
         )

@@ -108,3 +108,28 @@ export const countComments = (comments: Comment[]) => {
     });
     return count;
 };
+
+export function formatDateTime(dateTimeString: string) {
+    const dateTime = new Date(dateTimeString);
+    const now = new Date();
+
+    const diffTime = Math.abs(now.getTime() - dateTime.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 1) {
+        const hours = dateTime.getHours().toString().padStart(2, '0');
+        const minutes = dateTime.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    } else if (diffDays <= 365) {
+        const month = (dateTime.getMonth() + 1).toString().padStart(2, '0');
+        const day = dateTime.getDate().toString().padStart(2, '0');
+        const hours = dateTime.getHours().toString().padStart(2, '0');
+        const minutes = dateTime.getMinutes().toString().padStart(2, '0');
+        return `${day}/${month} ${hours}:${minutes}`;
+    } else {
+        const year = dateTime.getFullYear();
+        const month = (dateTime.getMonth() + 1).toString().padStart(2, '0');
+        const day = dateTime.getDate().toString().padStart(2, '0');
+        return `${day}/${month}/${year}`;
+    }
+}

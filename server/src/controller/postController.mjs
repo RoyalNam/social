@@ -1,5 +1,7 @@
 import isAuthenticated from '../utils/authMiddleware.mjs';
 import { User } from '../mongoose/schemas/user.mjs';
+import { getReceiverSocketId, io } from '../socket/socket.mjs';
+import Notification from '../mongoose/schemas/notification.mjs';
 
 class PostController {
     static async createPost(req, res) {
@@ -100,17 +102,27 @@ class PostController {
 
     static async getRandomPosts(req, res) {
         try {
-            let numberOfPostsToShow = 5;
+            let numberOfPostsToShow = 15;
 
             if (req.body && req.body.numberOfPostsToShow) {
                 numberOfPostsToShow = req.body.numberOfPostsToShow;
             }
 
-            const previousPostIds = req.previousPostIds || [];
+            req.previousPostIds = req.previousPostIds || [];
+
+            if (!req.totalPosts) {
+                req.totalPosts = await User.aggregate([
+                    { $project: { totalPosts: { $size: '$posts' } } },
+                    { $group: { _id: null, total: { $sum: '$totalPosts' } } },
+                ]);
+            }
+            if (req.previousPostIds.length >= req.totalPosts.total) {
+                return res.status(400).json({ message: 'All posts already retrieved' });
+            }
 
             const posts = await User.aggregate([
                 { $unwind: '$posts' },
-                { $match: { 'posts._id': { $nin: previousPostIds } } },
+                { $match: { 'posts._id': { $nin: req.previousPostIds } } },
                 { $sample: { size: numberOfPostsToShow } },
                 {
                     $project: {
@@ -125,8 +137,8 @@ class PostController {
                 },
             ]);
 
-            const newPostIds = posts.map((post) => post._id);
-            req.previousPostIds = [...previousPostIds, ...newPostIds];
+            const newPostIds = posts.map((post) => post.post._id);
+            req.previousPostIds = [...req.previousPostIds, ...newPostIds];
 
             res.status(200).json({ message: 'Random posts retrieved successfully', posts });
         } catch (error) {
@@ -134,7 +146,6 @@ class PostController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
-
     static async likePost(req, res) {
         try {
             const { userId, postId } = req.params;
@@ -153,8 +164,26 @@ class PostController {
 
             const isLiked = post.likes.includes(currentUser._id);
 
-            if (isLiked) post.likes = post.likes.filter((like) => like.toString() !== currentUser._id.toString());
-            else post.likes.push(currentUser._id);
+            if (isLiked) {
+                post.likes = post.likes.filter((like) => like.toString() !== currentUser._id.toString());
+
+                await Notification.deleteOne({ user: userId, sender: currentUser._id, action: 'liked' });
+            } else {
+                post.likes.push(currentUser._id);
+
+                const newNotification = new Notification({
+                    user: userId,
+                    action: 'liked',
+                    content: `${currentUser.name} liked your post`,
+                    sender: currentUser._id,
+                });
+                await newNotification.save();
+
+                const ownerSocketId = getReceiverSocketId(userId);
+                if (ownerSocketId) {
+                    io.to(ownerSocketId).emit('newNotification', newNotification);
+                }
+            }
 
             await user.save();
 
@@ -167,6 +196,7 @@ class PostController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+
     static async savePost(req, res) {
         try {
             const { userId, postId } = req.body;

@@ -1,5 +1,7 @@
 import isAuthenticated from '../utils/authMiddleware.mjs';
 import { User } from '../mongoose/schemas/user.mjs';
+import { getReceiverSocketId, io, sendSocketNotification } from '../socket/socket.mjs';
+import Notification from '../mongoose/schemas/notification.mjs';
 
 const handleNotFound = (res, item) => {
     return res.status(404).json({ message: `${item} not found` });
@@ -21,7 +23,25 @@ class CommentController {
             if (!post) return handleNotFound(res, 'Post');
 
             const newComment = post.posts.find((post) => post._id.toString() === postId).comments[0];
-            res.status(201).json({ message: 'Comment added successfully', comment: newComment });
+            const newNotification = new Notification({
+                user: post._id,
+                action: 'commented',
+                content: `New comment by ${currentUser.name} on your post`,
+                sender: currentUser._id,
+            });
+
+            await newNotification.save();
+
+            const receiverSocketId = getReceiverSocketId(post._id);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            }
+
+            res.status(201).json({
+                message: 'Comment added successfully',
+                comment: newComment,
+                notification: newNotification,
+            });
         } catch (error) {
             console.error('Error creating comment:', error);
             res.status(500).json({ message: 'Internal server error' });
@@ -91,7 +111,8 @@ class CommentController {
             }
             if (!targetPost || !targetComment) return handleNotFound(res, 'Post or Comment');
 
-            let newReply;
+            let newReply, newNotification;
+
             if (parentId) {
                 const findParentReply = (replies) => {
                     for (const reply of replies) {
@@ -109,16 +130,39 @@ class CommentController {
 
                 parentReplyToUpdate.replies.push({ user: currentUser._id, comment_text });
                 newReply = parentReplyToUpdate.replies.slice(-1)[0];
+
+                newNotification = new Notification({
+                    user: parentReplyToUpdate.user._id,
+                    action: 'replied',
+                    content: `New reply by ${currentUser.name}`,
+                    sender: currentUser._id,
+                });
             } else {
                 targetComment.replies.push({ user: currentUser._id, comment_text });
                 newReply = targetComment.replies.slice(-1)[0];
-            }
 
+                const receiverUser = await User.findById(targetComment.user._id);
+                newNotification = new Notification({
+                    user: receiverUser._id,
+                    action: 'replied',
+                    content: `New reply by ${currentUser.name}`,
+                    sender: currentUser._id,
+                });
+            }
+            await newNotification.save();
             await user.save();
+
+            const receiverSocketId = getReceiverSocketId(newNotification.user);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            } else {
+                console.warn(`Socket ID not found for user ID: ${newNotification.user}`);
+            }
 
             res.status(201).json({
                 message: parentId ? 'Nested reply added successfully' : 'Reply added successfully',
                 reply: newReply,
+                notification: newNotification,
             });
         } catch (error) {
             console.error('Error adding reply:', error);

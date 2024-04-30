@@ -5,6 +5,7 @@ import { PostProps } from '@/types';
 import { fetchPosts } from '@/api';
 import PostItem from '@/components/post/PostItem';
 import SuggestedUsers from '@/components/SuggestedUsers';
+import { Oval } from 'react-loader-spinner';
 
 const Home = () => {
     const [posts, setPosts] = useState<PostProps[]>([]);
@@ -17,6 +18,7 @@ const Home = () => {
 
     const getRandomPosts = async () => {
         try {
+            setLoading(false);
             if (fetchingPosts) return;
 
             setFetchingPosts(true);
@@ -29,8 +31,8 @@ const Home = () => {
         } catch (err) {
             throw err;
         } finally {
-            setLoading(false);
             setFetchingPosts(false);
+            setLoading(true);
         }
     };
 
@@ -45,11 +47,11 @@ const Home = () => {
 
     return (
         <MainLayout fetchData={getRandomPosts}>
-            {!loading ? (
-                <div className="flex">
-                    <div className="max-w-[472px] w-full">
-                        {posts.map((item) => (
-                            <div key={item.post._id}>
+            <div className="flex gap-2">
+                <div className="max-w-[472px] w-full">
+                    {posts.length > 0 ? (
+                        posts.map((item, idx) => (
+                            <div key={idx}>
                                 <PostItem
                                     postData={{
                                         author: item.author,
@@ -58,13 +60,30 @@ const Home = () => {
                                     updatePost={updatePost}
                                 />
                             </div>
-                        ))}
-                    </div>
-                    <div className="flex-1 hidden lg:block">
-                        <SuggestedUsers />
-                    </div>
+                        ))
+                    ) : (
+                        <div>No posts</div>
+                    )}
+
+                    {!loading && (
+                        <div>
+                            <Oval
+                                visible={true}
+                                height="50"
+                                width="50"
+                                color="#000"
+                                ariaLabel="oval-loading"
+                                wrapperStyle={{}}
+                                wrapperClass=""
+                                secondaryColor="#ccc"
+                            />
+                        </div>
+                    )}
                 </div>
-            ) : null}
+                <div className="flex-1 hidden lg:block">
+                    <SuggestedUsers />
+                </div>
+            </div>
         </MainLayout>
     );
 };

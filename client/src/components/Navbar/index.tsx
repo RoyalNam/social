@@ -5,8 +5,6 @@ import {
     BsArrowBarLeft,
     BsBell,
     BsBellFill,
-    BsCameraVideo,
-    BsCameraVideoFill,
     BsChatDots,
     BsChatDotsFill,
     BsCompass,
@@ -20,7 +18,9 @@ import Notifications from './Notifications';
 import Search from './Search';
 import CreatePost from '../post/CreatePost';
 import { useAuthContextProvider } from '@/context/authUserContext';
-import SummaryAPI from '@/api';
+import SummaryAPI, { getNotifications } from '@/api';
+import { useSocketContext } from '@/context/socketContext';
+import { Notification } from '@/types';
 
 interface NavProps {
     tit: string;
@@ -34,10 +34,38 @@ const Navbar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const { authUser } = useAuthContextProvider();
+    const { socket } = useSocketContext();
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isShowSearch, setShowSearch] = useState(false);
     const [isShowNotifications, setShowNotifications] = useState(false);
     const [isShowCreatePost, setShowCreatePost] = useState(false);
-    useEffect(() => {}, [authUser]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                if (authUser) {
+                    const notificationData = await getNotifications(authUser._id);
+                    console.log('notifications', notificationData);
+                    setNotifications(notificationData.notifications);
+                }
+            } catch (error) {
+                throw error;
+            }
+        };
+        fetchData();
+    }, [authUser]);
+
+    useEffect(() => {
+        const handleNotification = (newNotification: any) => {
+            const sound = new Audio('/notification.mp3');
+            sound.play();
+            setNotifications((prev) => [newNotification, ...prev]);
+        };
+        socket?.on('newNotification', handleNotification);
+        return () => {
+            socket?.off('newNotification', handleNotification);
+        };
+    }, [socket, setNotifications, notifications]);
+
     const NAV_LINK: NavProps[] = [
         {
             tit: 'Home',
@@ -66,15 +94,23 @@ const Navbar = () => {
             actIcon: <BsChatDotsFill />,
         },
         {
-            tit: 'Reels',
-            to: '/reels',
-            icon: <BsCameraVideo />,
-            actIcon: <BsCameraVideoFill />,
-        },
-        {
             tit: 'Notifications',
-            icon: <BsBell />,
-            actIcon: <BsBellFill />,
+            icon: (
+                <div className="relative">
+                    <BsBell />
+                    <span className="absolute -right-0.5 -top-1 z-10 rounded-full text-white bg-red-500 w-3.5 h-3.5 text-xs">
+                        {notifications.filter((item) => !item.read).length}
+                    </span>
+                </div>
+            ),
+            actIcon: (
+                <div className="relative">
+                    <BsBellFill />
+                    <span className="absolute -right-0.5 -top-1 z-10 rounded-full text-white bg-red-500 w-3.5 h-3.5 text-xs">
+                        {notifications.filter((item) => !item.read).length}
+                    </span>
+                </div>
+            ),
             onclick: () => {
                 if (isShowSearch) setShowSearch(false);
                 setShowNotifications(!isShowNotifications);
@@ -115,7 +151,14 @@ const Navbar = () => {
                 }
                 className="flex gap-2 items-center px-3 py-1 md:py-3 rounded-xl hover:bg-transparent md:hover:bg-black/10 dark:md:hover:bg-white/10"
             >
-                <span className="text-2xl">{isAct ? item.actIcon : item.icon}</span>
+                <span className="text-2xl">
+                    {isAct
+                        ? item.actIcon
+                        : item.tit === 'Notifications' && isShowNotifications
+                        ? item.actIcon
+                        : item.icon}
+                </span>
+
                 <span className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
                     {item.tit}
                 </span>
@@ -162,9 +205,17 @@ const Navbar = () => {
             <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
-            <a href={SummaryAPI.auth.logout} className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 md:inline-block">
-                <span className="lg:block hidden">Logout</span>
-                <button className="block lg:hidden" title="logout">
+            <a
+                href={SummaryAPI.auth.logout}
+                className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
+            >
+                <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
+                    Logout
+                </button>
+                <button
+                    className={`block lg:hidden ${isShowSearch || isShowNotifications ? '!block' : ''}`}
+                    title="logout"
+                >
                     <BsArrowBarLeft className="text-xl" />
                 </button>
             </a>
@@ -175,7 +226,7 @@ const Navbar = () => {
             )}
             {isShowNotifications && (
                 <RenderSidebar>
-                    <Notifications />
+                    <Notifications notifications={notifications} />
                 </RenderSidebar>
             )}
             <CreatePost show={isShowCreatePost} onClose={() => setShowCreatePost(false)} />

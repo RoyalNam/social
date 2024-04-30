@@ -3,6 +3,8 @@ import React from 'react';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthContextProvider } from '@/context/authUserContext';
+import { SocketContextProvider } from '@/context/socketContext';
+import { ChatUsersContextProvider } from '@/context/chatUsersContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,7 +17,11 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
         <html lang="en">
             <body className={inter.className} suppressHydrationWarning>
-                <AuthContextProvider>{children}</AuthContextProvider>
+                <AuthContextProvider>
+                    <SocketContextProvider>
+                        <ChatUsersContextProvider>{children}</ChatUsersContextProvider>
+                    </SocketContextProvider>
+                </AuthContextProvider>
             </body>
         </html>
     );

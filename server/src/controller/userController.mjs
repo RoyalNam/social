@@ -1,5 +1,6 @@
 import { matchedData, validationResult } from 'express-validator';
 import { User } from '../mongoose/schemas/user.mjs';
+import Notification from '../mongoose/schemas/notification.mjs';
 import { hashPassword } from '../utils/helpers.mjs';
 
 class UserController {
@@ -48,8 +49,6 @@ class UserController {
     }
     static async getRandomUsers(request, response) {
         const userId = request.params.id;
-        const numberOfUsers = 2;
-        console.log('xxxxxxxx', userId);
         try {
             const currentUser = await User.findById(userId);
             if (!currentUser) {
@@ -62,6 +61,7 @@ class UserController {
                 { _id: { $nin: [...followingIds, userId] } },
                 { name: 1, _id: 1, avatar: 1, bio: 1, email: 1 },
             );
+            const numberOfUsers = Math.min(5, usersNotFollowing.length);
 
             const randomIndexes = [];
             while (randomIndexes.length < numberOfUsers) {
@@ -119,6 +119,18 @@ class UserController {
         } catch (err) {
             console.log(err);
             return response.sendStatus(500);
+        }
+    }
+
+    static async getNotifications(request, response) {
+        try {
+            const { id: userId } = request.params;
+            const notifications = await Notification.find({ user: userId }).sort({ created_at: -1 });
+
+            response.status(200).json({ notifications });
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            response.status(500).json({ error: 'Internal server error' });
         }
     }
 }

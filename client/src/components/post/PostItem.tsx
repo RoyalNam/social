@@ -8,14 +8,16 @@ import { MinimalUser, PostProps } from '@/types';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import { fetchUsersBasicInfoById, followUser, toggleLikePost, toggleSavePost, unFollower } from '@/api';
 import PostDetail from './PostDetail';
+import UserListModal from '../UserListModal';
 
 interface PostItemProps {
     postData: PostProps;
     isShowImg?: boolean;
+    show?: boolean;
     updatePost: (post: PostProps) => void;
 }
 
-const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updatePost }) => {
+const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = true, updatePost }) => {
     const { authUser, updateAuthUser } = useAuthContextProvider();
     const { author, post } = postData;
     const router = useRouter();
@@ -78,6 +80,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
                         (item) => item.user_id != author._id && item.post_id !== post._id,
                     );
                 }
+
                 updateAuthUser(updatedUser);
                 setShowMores(false);
             }
@@ -159,18 +162,20 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
                 </button>
             </div>
             <Modal show={isShowMores} onClose={() => setShowMores(false)}>
-                <div className="text-center flex flex-col w-[400px] rounded-xl z-30 bg-primary">
-                    {MORES.map((item) => (
-                        <button
-                            onClick={item.onclick}
-                            key={item.tit}
-                            className={`${
-                                item.tit == 'UnFollow' && 'text-red-500'
-                            } border-b border-black/300 dark:border-white/20 py-3 last:border-none`}
-                        >
-                            {item.tit}
-                        </button>
-                    ))}
+                <div className="text-center flex flex-col w-[400px] rounded-xl z-30 bg-white dark:bg-primary">
+                    {MORES.map((item) =>
+                        item.tit === 'Follow' && authUser?._id === author._id ? null : (
+                            <button
+                                onClick={item.onclick}
+                                key={item.tit}
+                                className={`${
+                                    item.tit === 'UnFollow' ? 'text-red-500' : ''
+                                } border-b border-black/300 dark:border-white/20 py-3 last:border-none`}
+                            >
+                                {item.tit}
+                            </button>
+                        ),
+                    )}
                 </div>
             </Modal>
         </>
@@ -224,26 +229,8 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, updateP
                         </div>
                     </div>
                 </div>
-                <Modal show={usersLike.length > 0 && post.likes.length > 0} onClose={() => setUsersLike([])}>
-                    <div className="w-96 z-50 flex flex-col bg-primary rounded overflow-hidden">
-                        {usersLike &&
-                            usersLike.map((item) => (
-                                <div
-                                    key={item._id}
-                                    className="flex gap-1 items-center py-1.5 px-2 hover:bg-white/15 cursor-pointer"
-                                    onClick={() => router.push(`/profile/${item._id}`)}
-                                >
-                                    <img
-                                        src={item.avatar ?? 'user.png'}
-                                        alt=""
-                                        className="w-8 h-8 rounded-full line-clamp-1"
-                                    />
-                                    <span className="">{item.name}</span>
-                                </div>
-                            ))}
-                    </div>
-                </Modal>
-                {isShow && (
+                <UserListModal title="Likes" users={usersLike} onClose={() => setUsersLike([])} />
+                {isShow && show && (
                     <PostDetail postData={postData} updatePost={updatePost} closePostDetail={() => setShow(false)} />
                 )}
             </>

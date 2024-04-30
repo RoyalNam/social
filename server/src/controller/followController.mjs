@@ -1,4 +1,6 @@
 import { User } from '../mongoose/schemas/user.mjs';
+import { getReceiverSocketId, io } from '../socket/socket.mjs';
+import Notification from '../mongoose/schemas/notification.mjs';
 
 class FollowController {
     static async addFollower(req, res) {
@@ -16,14 +18,15 @@ class FollowController {
             }
 
             user.followers.push(follower._id);
+            follower.following.push(user._id);
             await user.save();
+            await follower.save();
             res.status(200).json(user);
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
         }
     }
-
     static async removeFollower(req, res) {
         const { userId, followerId } = req.params;
         try {
@@ -39,7 +42,9 @@ class FollowController {
             }
 
             user.followers = user.followers.filter((id) => id.toString() !== follower._id.toString());
+            follower.following = follower.following.filter((id) => id.toString() !== user._id.toString());
             await user.save();
+            await follower.save();
             res.status(200).json(user);
         } catch (error) {
             console.error(error);
@@ -62,8 +67,24 @@ class FollowController {
             }
 
             user.following.push(followingUser._id);
-            await user.save();
-            res.status(200).json({ isFollowing: !isFollowing });
+            followingUser.followers.push(user._id);
+            await Promise.all([user.save(), followingUser.save()]);
+
+            const newNotification = new Notification({
+                user: followingUser._id,
+                action: 'followed',
+                content: `${user.name} followed you`,
+                sender: user._id,
+            });
+            await newNotification.save();
+
+            const receiverSocketId = getReceiverSocketId(followingUser._id);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            }
+
+            // Send response
+            res.status(200).json({ isFollowing: true, notification: newNotification });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Server Error' });
@@ -86,7 +107,9 @@ class FollowController {
             }
 
             user.following = user.following.filter((id) => id.toString() !== followingUser._id.toString());
+            followingUser.followers = followingUser.followers.filter((id) => id.toString() !== user._id.toString());
             await user.save();
+            await followingUser.save();
             res.status(200).json({ isFollowing: !isFollowing });
         } catch (error) {
             console.error(error);

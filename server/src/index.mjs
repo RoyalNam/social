@@ -13,7 +13,7 @@ import { app, server } from './socket/socket.mjs';
 dotenv.config();
 
 mongoose
-    .connect('mongodb://localhost/MXH1')
+    .connect('mongodb://localhost/MXH')
     .then(() => console.log('connect to database'))
     .catch((err) => console.log(`Error: ${err}`));
 

@@ -62,9 +62,6 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
     const updateCommentsRecursively = (comments: Comment[], updatedComment: Comment, parentId: string): Comment[] => {
         return comments.map((prevComment) => {
             if (prevComment._id === parentId) {
-                console.log(prevComment.replies, updatedComment);
-                console.log(parentId);
-
                 return { ...prevComment, replies: [...prevComment.replies, updatedComment] };
             } else if (prevComment.replies && prevComment.replies.length > 0) {
                 const updatedReplies = updateCommentsRecursively(prevComment.replies, updatedComment, parentId);
@@ -80,15 +77,13 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
             ...post,
             comments: updateCommentsRecursively(post.comments, updatedComment, parentId),
         };
-        console.log('update', updatedPost);
-
         updatePost({ ...postData, post: updatedPost });
     };
 
     return (
         <>
             <Modal show={true} onClose={handleClosePostDetail}>
-                <div className="z-40 relative bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
+                <div className="z-40 relative bg-white dark:bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
                     <div className="hidden md:flex flex-1 items-center border-r">
                         <img
                             src={post.image_url}
@@ -98,7 +93,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                         />
                     </div>
                     <div className="w-full md:w-[400px] h-full pt-5 pb-3 px-4 flex flex-col">
-                        <PostItem postData={postData} updatePost={updatePost} isShowImg={false} />
+                        <PostItem postData={postData} show={false} updatePost={updatePost} isShowImg={false} />
                         <div className="md:hidden flex items-center -mx-4">
                             <img
                                 src={post.image_url}
@@ -260,7 +255,7 @@ const RenderItem: React.FC<{
                     onClick={redirectUserProfile}
                 />
                 <div className="flex-1">
-                    <div className="dark:bg-white/20 bg-black/20 mr-1 inline-block rounded-2xl px-2 py-1">
+                    <div className="dark:bg-white/20 bg-black/5 mr-1 inline-block rounded-2xl px-2 py-1">
                         <h4 className="font-semibold cursor-pointer hover:underline" onClick={redirectUserProfile}>
                             {user?.name}
                         </h4>

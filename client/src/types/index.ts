@@ -54,19 +54,35 @@ interface Message {
     senderId: string;
     receiverId: string;
     message: string;
+    createdAt: string;
+    updatedAt: string;
 }
 interface Conversation {
     _id: string;
     participants: string[];
     message: string[];
 }
+interface Notification {
+    _id: string;
+    user: string;
+    action: 'messaged' | 'commented' | 'replied' | 'liked';
+    content?: string;
+    sender: string;
+    read: boolean;
+    created_at: string;
+}
+
 export interface PostProps {
     author: MinimalUser;
     post: Post;
 }
+
 export interface CommentProps {
     comment: Comment;
     author: MinimalUser;
 }
-
-export type { MinimalUser, User, Post, Comment, Tag, Message, Conversation, SavePost };
+interface UserActivity {
+    user_id: string;
+    last_active: string;
+}
+export type { MinimalUser, Notification, User, Post, Comment, Tag, Message, Conversation, SavePost, UserActivity };

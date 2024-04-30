@@ -15,7 +15,7 @@ const MainLayout: React.FC<{ children: React.ReactNode; fetchData?: () => void }
                 const scrollTop = mainElement.scrollTop;
                 const clientHeight = mainElement.clientHeight;
 
-                if (scrollTop + clientHeight >= scrollHeight - 100) {
+                if (scrollTop + clientHeight >= scrollHeight - 50) {
                     fetchData();
                 }
             };
