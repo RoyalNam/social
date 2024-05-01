@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
-import Navbar from '@/components/navbar';
+import Navbar from '@/components/navbar/Navbar';
 import AuthLayout from '../AuthLayout';
 
 const MainLayout: React.FC<{ children: React.ReactNode; fetchData?: () => void }> = ({ children, fetchData }) => {

@@ -1,5 +1,5 @@
 'use client';
-import Navbar from '@/components/navbar';
+import Navbar from '@/components/navbar/Navbar';
 import AuthLayout from '../AuthLayout';
 import { useChatUsersContextProvider } from '@/context/chatUsersContext';
 import { BsPencilSquare, BsX } from 'react-icons/bs';

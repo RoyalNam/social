@@ -5,6 +5,7 @@ const CLIENT_URL = process.env.CLIENT_URL;
 class AuthController {
     static handleLoginSuccess(req, res) {
         if (req.user) {
+            res.cookie('hello', 'world', { maxAge: 30000, signed: true });
             res.status(200).json({
                 success: true,
                 message: 'Login successfully!',
