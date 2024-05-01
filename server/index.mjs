@@ -6,9 +6,9 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
-import router from './routes/index.mjs';
+import router from './src/routes/index.mjs';
 import dotenv from 'dotenv';
-import { app, server } from './socket/socket.mjs';
+import { app, server } from './src/socket/socket.mjs';
 
 dotenv.config();
 
