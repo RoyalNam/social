@@ -2,7 +2,7 @@ import publicClient from '../client/public.client';
 
 const followEndpoint = {
     follower: ({ authId, userId }: { authId: string; userId: string }) => `/${authId}/followers/${userId}`,
-    following: ({ authId, userId }: { authId: string; userId: string }) => `/${authId}/followings/${userId}`,
+    following: ({ authId, userId }: { authId: string; userId: string }) => `/${authId}/following/${userId}`,
 };
 
 const followApi = {

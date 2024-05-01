@@ -1,8 +1,9 @@
-import publicClient from '../client/public.client';
+import axios from 'axios';
+import publicClient, { baseURL } from '../client/public.client';
 
 const endpoint = {
     user_activity: ({ userId }: { userId: string }) => `/activity/${userId}`,
-    uploadImage: '/uploadImage',
+    uploadImage: `${baseURL}/api/uploadImage`,
 };
 
 const otherApi = {
@@ -24,7 +25,7 @@ const otherApi = {
         return usersActivity;
     },
     uploadImage: async ({ formData }: { formData: FormData }) => {
-        const resp = await publicClient.post(endpoint.uploadImage, formData, {
+        const resp = await axios.post(endpoint.uploadImage, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

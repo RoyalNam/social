@@ -1,8 +1,8 @@
 'use client';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import { User } from '@/types';
+import userApi from '@/api/modules/user.api';
 
 interface AuthContextType {
     authUser: User | null;
@@ -22,13 +22,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         const fetchData = async () => {
             try {
                 if (!isAuthenticated) {
-                    const response = await axios.get('http://localhost:3000/auth/login/success', {
-                        withCredentials: true,
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                    });
+                    const response = await userApi.loginSuccess();
                     if (response.status === 200) {
                         console.log('User logged in:', response.data.user);
                         setAuthUser(response.data.user);

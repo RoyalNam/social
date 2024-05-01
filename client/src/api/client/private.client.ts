@@ -1,8 +1,9 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import queryString from 'query-string';
 
-export const baseURL = 'https://social-api-blush.vercel.app';
-export const clientBaseURL = 'http://localhost:3001';
+// export const baseURL = 'https://social-api-blush.vercel.app';
+export const baseURL = 'http://localhost:5000';
+export const clientBaseURL = 'http://localhost:3000';
 
 const privateClient = axios.create({
     baseURL: `${baseURL}/api`,

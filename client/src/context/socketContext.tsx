@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { useAuthContextProvider } from './authUserContext';
+import { baseURL } from '@/api/client/private.client';
 
 interface SocketContextType {
     socket: Socket | null;
@@ -18,7 +19,7 @@ export const SocketContextProvider = ({ children }: { children: React.ReactNode 
         let socket: Socket | undefined;
 
         if (authUser) {
-            socket = io('http://localhost:3000', {
+            socket = io(baseURL, {
                 query: {
                     userId: authUser._id,
                 },

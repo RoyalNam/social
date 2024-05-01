@@ -7,6 +7,7 @@ export const userEndpoint = {
         google: `${baseURL}/auth/google/`,
         logout: `${baseURL}/auth/logout/`,
         local: `${baseURL}/auth/local/`,
+        login_success: `${baseURL}/auth/login/success`,
         register: '/users',
     },
     user: ({ id }: { id: string }) => `/users/${id}`,
@@ -27,6 +28,10 @@ const userApi = {
             }
             return { success: false };
         }
+    },
+    loginSuccess: async () => {
+        const resp = await privateClient.get(userEndpoint.auth.login_success);
+        return resp;
     },
     register: async (data: { name: string; email: string; password: string }) => {
         const resp = await publicClient.post(userEndpoint.auth.register, data);
