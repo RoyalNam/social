@@ -21,7 +21,6 @@ import { useAuthContextProvider } from '@/context/authUserContext';
 import { useSocketContext } from '@/context/socketContext';
 import { Notification } from '@/types';
 import userApi, { userEndpoint } from '@/api/modules/user.api';
-import Link from 'next/link';
 
 interface NavProps {
     tit: string;
@@ -134,6 +133,15 @@ const Navbar = () => {
         if (isShowNotifications) setShowNotifications(false);
         if (isShowSearch) setShowSearch(false);
     };
+    const handleLogout = async () => {
+        try {
+            const isLogout = await userApi.logout();
+            localStorage.removeItem('authToken');
+            router.push('/account/login');
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
     const renderNavItem = (item: NavProps) => {
         const isAct =
             item.to && ((pathname === '/' && item.to === '/') || (pathname.startsWith(item.to) && item.to !== '/'));
@@ -206,21 +214,19 @@ const Navbar = () => {
             <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
-            <div onClick={() => localStorage.removeItem('authToken')}>
-                <Link
-                    href={userEndpoint.auth.logout}
-                    className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
+            <div
+                onClick={handleLogout}
+                className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
+            >
+                <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
+                    Logout
+                </button>
+                <button
+                    className={`block lg:hidden ${isShowSearch || isShowNotifications ? '!block' : ''}`}
+                    title="logout"
                 >
-                    <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
-                        Logout
-                    </button>
-                    <button
-                        className={`block lg:hidden ${isShowSearch || isShowNotifications ? '!block' : ''}`}
-                        title="logout"
-                    >
-                        <BsArrowBarLeft className="text-xl" />
-                    </button>
-                </Link>
+                    <BsArrowBarLeft className="text-xl" />
+                </button>
             </div>
             {isShowSearch && (
                 <RenderSidebar>

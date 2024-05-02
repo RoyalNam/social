@@ -40,13 +40,12 @@ class AuthController {
     }
 
     static handleLogout(req, res) {
-        // req.logout((err) => {
-        //     if (err) {
-        //         return res.status(500).send('Logout failure!');
-        //     }
-        // });
         res.clearCookie('x-auth-cookie');
-        res.redirect(CLIENT_URL);
+
+        res.status(200).json({
+            success: true,
+            message: 'Logout successful!',
+        });
     }
 
     static async handleLocalAuth(req, res) {

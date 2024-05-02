@@ -7,7 +7,7 @@ const router = Router();
 
 router.get('/login/success', authenticateToken, AuthController.handleLoginSuccess);
 router.get('/login/failed', AuthController.handleLoginFailed);
-router.get('/logout', AuthController.handleLogout);
+router.post('/logout', AuthController.handleLogout);
 router.post('/local', AuthController.handleLocalAuth);
 router.get('/google', AuthController.handleGoogleAuth);
 router.get('/google/callback', AuthController.handleGoogleAuthCallback);

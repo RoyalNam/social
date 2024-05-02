@@ -33,7 +33,10 @@ const userApi = {
             return { success: false, error: error };
         }
     },
-
+    logout: async () => {
+        const resp = await publicClient.post(userEndpoint.auth.logout, {});
+        return resp.data;
+    },
     loginSuccess: async () => {
         const resp = await privateClient.get(userEndpoint.auth.login_success);
         return resp;
