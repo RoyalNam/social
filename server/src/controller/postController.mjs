@@ -1,4 +1,3 @@
-import isAuthenticated from '../utils/authMiddleware.mjs';
 import { User } from '../mongoose/schemas/user.mjs';
 import { getReceiverSocketId, io } from '../socket/socket.mjs';
 import Notification from '../mongoose/schemas/notification.mjs';
@@ -7,8 +6,6 @@ class PostController {
     static async createPost(req, res) {
         try {
             const { image_url, caption } = req.body;
-            isAuthenticated(req, res);
-
             const currentUser = req.user;
 
             const newPost = {
@@ -33,8 +30,6 @@ class PostController {
             const postId = req.params.postId;
             const { image_url, caption } = req.body;
 
-            isAuthenticated(req, res);
-
             const currentUser = req.user;
             const post = currentUser.posts.find((post) => post._id == postId);
 
@@ -57,8 +52,6 @@ class PostController {
     static async deletePost(req, res) {
         try {
             const postId = req.params.postId;
-
-            isAuthenticated(req, res);
 
             const currentUser = req.user;
             const postIndex = currentUser.posts.findIndex((post) => post._id == postId);
@@ -149,7 +142,6 @@ class PostController {
     static async likePost(req, res) {
         try {
             const { userId, postId } = req.params;
-            isAuthenticated(req, res);
             const currentUser = req.user;
 
             const user = await User.findById(userId);
@@ -200,7 +192,6 @@ class PostController {
     static async savePost(req, res) {
         try {
             const { userId, postId } = req.body;
-            isAuthenticated(req, res);
             const currentUser = req.user;
 
             const index = currentUser.save_post.findIndex(

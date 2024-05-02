@@ -1,4 +1,3 @@
-import '../config/passport.mjs';
 import express from 'express';
 import postRouter from './posts.mjs';
 import authRouter from './auth.mjs';

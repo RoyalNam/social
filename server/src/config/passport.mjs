@@ -3,10 +3,11 @@ import dotenv from 'dotenv';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { comparePassword } from '../utils/helpers.mjs';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../mongoose/schemas/user.mjs';
 dotenv.config();
 
+const JWT_SECRET = process.env.JWT_SECRET;
 passport.use(
     'google',
     new GoogleStrategy(
@@ -85,31 +86,25 @@ passport.use(
     ),
 );
 
+// JWT strategy
+const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: JWT_SECRET,
+};
+
 passport.use(
-    'local',
-    new LocalStrategy(async (email, password, done) => {
+    new JwtStrategy(jwtOptions, async (payload, done) => {
         try {
-            const findUser = await User.findOne({ email });
-            if (!findUser) throw new Error('User not found');
-            if (!comparePassword(password, findUser.password)) throw new Error('Bad Credentials');
-            done(null, findUser);
+            const user = await User.findById(payload.id);
+            if (user) {
+                done(null, user);
+            } else {
+                done(null, false);
+            }
         } catch (err) {
-            done(err, null);
+            done(err, false);
         }
     }),
 );
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const findUser = await User.findById(id);
-        return findUser ? done(null, findUser) : done(null, null);
-    } catch (err) {
-        done(err, null);
-    }
-});
 
 export default passport;

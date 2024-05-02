@@ -53,6 +53,7 @@ app.get('/', (request, response) => {
     console.log(request.session);
     console.log(request.session.id);
     request.session.visited = true;
+
     response.status(201).send({ msg: 'Hello World' });
 });
 

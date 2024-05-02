@@ -43,13 +43,6 @@ export const sendSocketNotification = (receiverId, event, data) => {
         console.log('Invalid receiver ID: undefined');
         return;
     }
-
-    // const receiverSocketId = getReceiverSocketId(receiverId);
-    // if (receiverSocketId) {
-    //   io.to(receiverSocketId).emit(event, data); // Emit event to specific client
-    // } else {
-    //   console.log(`Socket ID not found for user ID: ${receiverId}`);
-    // }
 };
 
 export { app, io, server };

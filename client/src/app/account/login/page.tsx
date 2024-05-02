@@ -17,6 +17,8 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const isLogin = await userApi.loginLocal(formData);
+        console.log('login', isLogin);
+
         if (isLogin && !isLogin?.success) setErr(true);
     };
 

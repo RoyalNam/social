@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { useRouter } from 'next/navigation';
 import { User } from '@/types';
 import userApi from '@/api/modules/user.api';
+import axios from 'axios';
+import { baseURL } from '@/api/client/private.client';
 
 interface AuthContextType {
     authUser: User | null;
@@ -22,7 +24,13 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         const fetchData = async () => {
             try {
                 if (!isAuthenticated) {
-                    const response = await userApi.loginSuccess();
+                    const response = await axios.get(`${baseURL}/auth/login/success`, {
+                        withCredentials: true,
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                    });
                     if (response.status === 200) {
                         console.log('User logged in:', response.data.user);
                         setAuthUser(response.data.user);
@@ -33,12 +41,14 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
                     }
                 }
             } catch (error) {
+                console.log(error);
                 router.push('/account/login');
             }
         };
 
         fetchData();
     }, []);
+    console.log('User logged in:', authUser);
 
     const updateAuthUser = (updatedUser: User) => {
         setAuthUser(updatedUser);

@@ -1,4 +1,3 @@
-import isAuthenticated from '../utils/authMiddleware.mjs';
 import { User } from '../mongoose/schemas/user.mjs';
 import { getReceiverSocketId, io, sendSocketNotification } from '../socket/socket.mjs';
 import Notification from '../mongoose/schemas/notification.mjs';
@@ -12,7 +11,6 @@ class CommentController {
         try {
             const { postId } = req.params;
             const { comment_text } = req.body;
-            isAuthenticated(req, res);
 
             const currentUser = req.user;
             const post = await User.findOneAndUpdate(
@@ -52,7 +50,6 @@ class CommentController {
         try {
             const { postId, commentId } = req.params;
             const { comment_text } = req.body;
-            isAuthenticated(req, res);
 
             const currentUser = req.user;
             const post = await User.findOneAndUpdate(
@@ -75,7 +72,6 @@ class CommentController {
     static async deleteComment(req, res) {
         try {
             const { postId, commentId } = req.params;
-            isAuthenticated(req, res);
 
             const post = await User.findOneAndUpdate(
                 { 'posts._id': postId },
@@ -95,7 +91,7 @@ class CommentController {
         try {
             const { postId, commentId } = req.params;
             const { parentId, comment_text } = req.body;
-            isAuthenticated(req, res);
+
             const currentUser = req.user;
             const user = await User.findOne({ 'posts._id': postId, 'posts.comments._id': commentId });
             if (!user) return handleNotFound(res, 'User not found');
