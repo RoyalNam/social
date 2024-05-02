@@ -206,20 +206,22 @@ const Navbar = () => {
             <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
-            <Link
-                href={userEndpoint.auth.logout}
-                className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
-            >
-                <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
-                    Logout
-                </button>
-                <button
-                    className={`block lg:hidden ${isShowSearch || isShowNotifications ? '!block' : ''}`}
-                    title="logout"
+            <div onClick={() => localStorage.removeItem('authToken')}>
+                <Link
+                    href={userEndpoint.auth.logout}
+                    className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
                 >
-                    <BsArrowBarLeft className="text-xl" />
-                </button>
-            </Link>
+                    <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
+                        Logout
+                    </button>
+                    <button
+                        className={`block lg:hidden ${isShowSearch || isShowNotifications ? '!block' : ''}`}
+                        title="logout"
+                    >
+                        <BsArrowBarLeft className="text-xl" />
+                    </button>
+                </Link>
+            </div>
             {isShowSearch && (
                 <RenderSidebar>
                     <Search />

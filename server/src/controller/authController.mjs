@@ -44,11 +44,9 @@ class AuthController {
             if (err) {
                 return res.status(500).send('Logout failure!');
             }
-
-            res.clearCookie('x-auth-cookie');
-
-            res.redirect(CLIENT_URL);
         });
+        res.clearCookie('x-auth-cookie');
+        res.redirect(CLIENT_URL);
     }
 
     static async handleLocalAuth(req, res) {
