@@ -40,11 +40,11 @@ class AuthController {
     }
 
     static handleLogout(req, res) {
-        req.logout((err) => {
-            if (err) {
-                return res.status(500).send('Logout failure!');
-            }
-        });
+        // req.logout((err) => {
+        //     if (err) {
+        //         return res.status(500).send('Logout failure!');
+        //     }
+        // });
         res.clearCookie('x-auth-cookie');
         res.redirect(CLIENT_URL);
     }
