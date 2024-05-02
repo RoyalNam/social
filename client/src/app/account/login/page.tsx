@@ -4,22 +4,28 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import InputCus from '@/components/InputCus';
 import userApi, { userEndpoint } from '@/api/modules/user.api';
+import { useAuthContextProvider } from '@/context/authUserContext';
 
 const Login = () => {
     const router = useRouter();
+    const { updateAuthUser } = useAuthContextProvider();
     const [isErr, setErr] = useState(false);
     const initialData = {
-        username: '',
+        email: '',
         password: '',
     };
     const [formData, setFormData] = useState(initialData);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const isLogin = await userApi.loginLocal(formData);
-        console.log('login', isLogin);
-
-        if (isLogin && !isLogin?.success) setErr(true);
+        const userRes = await userApi.loginLocal(formData);
+        console.log('login', userRes);
+        if (userRes) {
+            updateAuthUser(userRes.user);
+            router.push('/');
+        } else {
+            setErr(true);
+        }
     };
 
     const handleInputChange = (name: string, value: string) => {
@@ -41,8 +47,8 @@ const Login = () => {
                         item={{
                             type: 'email',
                             placeholder: 'Email',
-                            value: formData.username,
-                            onChange: (value) => handleInputChange('username', value),
+                            value: formData.email,
+                            onChange: (value) => handleInputChange('email', value),
                         }}
                     />
                     <InputCus

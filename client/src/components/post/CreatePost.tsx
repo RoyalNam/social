@@ -265,7 +265,7 @@ const CreatePost = ({ show, onClose }: { show: boolean; onClose: () => void }) =
                     <div className="bg-white dark:bg-primary w-96 text-center text-sm p-4 flex flex-col gap-2 rounded-xl">
                         <div className="py-4">
                             <h6 className="text-xl mb-1">Discard post?</h6>
-                            <span>If you leave, your edits won't be saved.</span>
+                            <span>If you leave, your edits won&apos;t be saved.</span>
                         </div>
                         <button
                             className="text-red-500 py-3 border-y border-black/30 dark:border-white/20"

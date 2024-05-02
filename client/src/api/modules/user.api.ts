@@ -1,4 +1,4 @@
-import privateClient, { baseURL, clientBaseURL } from '../client/private.client';
+import privateClient, { baseURL } from '../client/private.client';
 import publicClient from '../client/public.client';
 
 export const userEndpoint = {
@@ -17,18 +17,23 @@ export const userEndpoint = {
     search: ({ val }: { val: string }) => `/users?filter=name&value=${val}`,
 };
 const userApi = {
-    loginLocal: async (formData: { username: string; password: string }) => {
+    loginLocal: async (formData: { email: string; password: string }) => {
         try {
-            await privateClient.post(userEndpoint.auth.local, formData);
-            return { success: true };
-        } catch (error: any) {
-            if (!error.response) {
-                window.location.href = clientBaseURL;
-                return;
+            const response = await publicClient.post(userEndpoint.auth.local, formData);
+            console.log('res', response);
+
+            if (response && response.data && response.data.token) {
+                localStorage.setItem('authToken', response.data.token);
+                return response.data;
+            } else {
+                return { success: false };
             }
-            return { success: false };
+        } catch (error) {
+            console.error('Error logging in:', error);
+            return { success: false, error: error };
         }
     },
+
     loginSuccess: async () => {
         const resp = await privateClient.get(userEndpoint.auth.login_success);
         return resp;

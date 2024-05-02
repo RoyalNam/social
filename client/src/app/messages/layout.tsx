@@ -1,6 +1,4 @@
 'use client';
-import Navbar from '@/components/navbar/Navbar';
-import AuthLayout from '../AuthLayout';
 import { useChatUsersContextProvider } from '@/context/chatUsersContext';
 import { BsPencilSquare, BsX } from 'react-icons/bs';
 import { useEffect, useState } from 'react';
@@ -10,6 +8,8 @@ import { formatNumber, timeAgoFromPast } from '@/utils';
 import Modal from '@/components/Modal';
 import { User } from '@/types';
 import userApi from '@/api/modules/user.api';
+import { useAuthContextProvider } from '@/context/authUserContext';
+import Navbar from '@/components/navbar';
 
 export default function MessagesLayout({
     children,
@@ -17,13 +17,18 @@ export default function MessagesLayout({
     children: React.ReactNode;
 }>) {
     const router = useRouter();
+    const { authUser } = useAuthContextProvider();
     const { onlineUsers } = useSocketContext();
     const { chatUsers, usersActivity } = useChatUsersContextProvider();
     const [isShowChatModel, setShowChatModel] = useState(false);
     const [foundUsers, setFoundUsers] = useState<User[]>([]);
     const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | undefined>(undefined);
     const [searchValue, setSearchValue] = useState('');
+    const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+        if (authUser) setLoading(false);
+    }, [authUser]);
     const redirectMessage = (userId: string) => {
         router.push(`/messages/${userId}`);
     };
@@ -114,8 +119,8 @@ export default function MessagesLayout({
             }
         };
     }, [searchValue]);
-    return (
-        <AuthLayout>
+    return !loading ? (
+        <>
             <div className="flex h-screen flex-col md:flex-row">
                 <Navbar />
                 <main className="flex-1 overflow-hidden">
@@ -193,6 +198,6 @@ export default function MessagesLayout({
                     {/* <button className="bg-blue-500 w-full rounded-full py-2 font-semibold opacity-60">Chat</button> */}
                 </div>
             </Modal>
-        </AuthLayout>
-    );
+        </>
+    ) : null;
 }

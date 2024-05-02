@@ -23,22 +23,24 @@ const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) =
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const activeChatUserIds: string[] = await messageApi.getUsersChat();
+            if (authUser) {
+                try {
+                    const activeChatUserIds: string[] = await messageApi.getUsersChat();
 
-                if (activeChatUserIds && activeChatUserIds.length > 0) {
-                    const chatUserData = await userApi.getBasicInfoByIds(activeChatUserIds);
-                    const activeUserActivityData = await otherApi.getUsersActivity(activeChatUserIds);
-                    setUsersActivity(activeUserActivityData);
+                    if (activeChatUserIds && activeChatUserIds.length > 0) {
+                        const chatUserData = await userApi.getBasicInfoByIds(activeChatUserIds);
+                        const activeUserActivityData = await otherApi.getUsersActivity(activeChatUserIds);
+                        setUsersActivity(activeUserActivityData);
 
-                    if (chatUserData && chatUserData.length > 0)
-                        setChatUsers(chatUserData.filter((user) => user !== null) as MinimalUser[]);
+                        if (chatUserData && chatUserData.length > 0)
+                            setChatUsers(chatUserData.filter((user) => user !== null) as MinimalUser[]);
+                    }
+                } catch (err) {
+                    throw err;
                 }
-            } catch (err) {
-                throw err;
             }
         };
-        if (authUser) fetchData();
+        fetchData();
     }, [authUser]);
     useEffect(() => {
         if (chatUsersUpdated && chatUsers.length > 0) {

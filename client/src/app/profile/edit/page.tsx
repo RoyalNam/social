@@ -6,6 +6,7 @@ import { useAuthContextProvider } from '@/context/authUserContext';
 import Modal from '@/components/Modal';
 import userApi from '@/api/modules/user.api';
 import otherApi from '@/api/modules/other.api';
+import MainLayout from '@/app/MainLayout';
 
 const EditProfile = () => {
     const router = useRouter();
@@ -91,7 +92,7 @@ const EditProfile = () => {
 
     return (
         authUser && (
-            <>
+            <MainLayout>
                 <div className="max-w-2xl">
                     <div className="flex justify-between items-center">
                         <img src={updateProfile.avatar ?? '/user.png'} alt="" className="w-52 h-52 rounded-full" />
@@ -199,7 +200,7 @@ const EditProfile = () => {
                         <span className="text-sm font-medium mt-2">Updating profile...</span>
                     </div>
                 </Modal>
-            </>
+            </MainLayout>
         )
     );
 };

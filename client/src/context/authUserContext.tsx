@@ -3,12 +3,9 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { useRouter } from 'next/navigation';
 import { User } from '@/types';
 import userApi from '@/api/modules/user.api';
-import axios from 'axios';
-import { baseURL } from '@/api/client/private.client';
 
 interface AuthContextType {
     authUser: User | null;
-    isAuthenticated: boolean;
     updateAuthUser: (updateAuthUser: User) => void;
 }
 
@@ -16,39 +13,39 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [authUser, setAuthUser] = useState<User | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const router = useRouter();
     const memoizedUser = useMemo(() => authUser, [authUser]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                if (!isAuthenticated) {
-                    const response = await axios.get(`${baseURL}/auth/login/success`, {
-                        withCredentials: true,
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                    });
-                    if (response.status === 200) {
-                        console.log('User logged in:', response.data.user);
-                        setAuthUser(response.data.user);
-                        setIsAuthenticated(true);
-                    } else {
-                        router.push('/account/login');
-                        throw new Error('Authentication failed!');
-                    }
+                const response = await userApi.loginSuccess();
+                if (response.status === 200) {
+                    console.log('User logged in:', response.data.user);
+                    setAuthUser(response.data.user);
+                } else {
+                    router.push('/account/login');
+                    throw new Error('Authentication failed!');
                 }
             } catch (error) {
-                console.log(error);
+                console.error('Error during authentication:', error);
                 router.push('/account/login');
             }
         };
 
         fetchData();
+
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === 'authToken') {
+                fetchData();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, []);
-    console.log('User logged in:', authUser);
 
     const updateAuthUser = (updatedUser: User) => {
         setAuthUser(updatedUser);
@@ -56,7 +53,6 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const contextValue: AuthContextType = {
         authUser: memoizedUser,
-        isAuthenticated,
         updateAuthUser,
     };
 

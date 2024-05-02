@@ -1,9 +1,7 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import queryString from 'query-string';
 
-export const baseURL = 'https://social-3kg4.onrender.com';
-// export const baseURL = 'http://localhost:5000';
-export const clientBaseURL = 'http://localhost:3000';
+export const baseURL = 'https://server-gsx0.onrender.com';
 
 const privateClient = axios.create({
     baseURL: `${baseURL}/api`,
@@ -11,11 +9,26 @@ const privateClient = axios.create({
 });
 
 privateClient.interceptors.request.use(async (config) => {
+    let token = localStorage.getItem('authToken');
+    if (!token) {
+        const cookie = document.cookie;
+        const tokenCookie = cookie ? cookie.split('; ').find((row) => row.startsWith('x-auth-cookie=')) : null;
+        token = tokenCookie ? tokenCookie.split('=')[1] : null;
+
+        if (token) {
+            localStorage.setItem('authToken', token);
+        }
+    }
+
+    if (!token) {
+        throw new Error('Authentication token not found');
+    }
+
     return {
         ...config,
-        withCredentials: true,
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         } as AxiosRequestHeaders,
     };
 });

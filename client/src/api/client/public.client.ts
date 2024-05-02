@@ -1,8 +1,7 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import queryString from 'query-string';
 
-export const baseURL = 'https://social-3kg4.onrender.com';
-// export const baseURL = 'http://localhost:5000';
+export const baseURL = 'https://server-gsx0.onrender.com';
 
 const publicClient = axios.create({
     baseURL: `${baseURL}/api`,

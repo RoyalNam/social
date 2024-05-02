@@ -8,6 +8,7 @@ import { timeAgoFromPast } from '@/utils';
 import PostItem from './PostItem';
 import userApi from '@/api/modules/user.api';
 import postApi from '@/api/modules/post.api';
+import { useAuthContextProvider } from '@/context/authUserContext';
 
 export interface PostDetailProps {
     postData: PostProps | null;
@@ -16,34 +17,36 @@ export interface PostDetailProps {
 }
 
 const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePostDetail }) => {
-    if (!postData) return null;
-    const { post, author } = postData;
+    const { authUser } = useAuthContextProvider();
     const commentTxtRef = useRef<HTMLTextAreaElement | null>(null);
     const [isDiscard, setDiscard] = useState(false);
+    useEffect(() => {}, [authUser]);
     useEffect(() => {}, [postData]);
 
     const handleCreateComment = async () => {
-        try {
-            if (postData && commentTxtRef.current && commentTxtRef.current.value.trim() != '') {
-                const comment = await postApi.createComment({
-                    postId: post._id,
-                    data: { comment_text: commentTxtRef.current?.value.toString() },
-                });
+        if (authUser) {
+            try {
+                if (postData && commentTxtRef.current && commentTxtRef.current.value.trim() != '') {
+                    const comment = await postApi.createComment({
+                        postId: postData.post._id,
+                        data: { comment_text: commentTxtRef.current?.value.toString(), userId: authUser._id },
+                    });
 
-                if (comment) {
-                    const updatedComments = [comment.comment, ...post.comments];
+                    if (comment) {
+                        const updatedComments = [comment.comment, ...postData.post.comments];
 
-                    const updatedPost = {
-                        ...post,
-                        comments: updatedComments,
-                    };
+                        const updatedPost = {
+                            ...postData.post,
+                            comments: updatedComments,
+                        };
 
-                    updatePost({ author, post: updatedPost });
-                    commentTxtRef.current.value = '';
+                        updatePost({ author: postData.author, post: updatedPost });
+                        commentTxtRef.current.value = '';
+                    }
                 }
+            } catch (err) {
+                throw err;
             }
-        } catch (err) {
-            throw err;
         }
     };
 
@@ -74,20 +77,22 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
     };
 
     const updateComments = (updatedComment: Comment, parentId: string) => {
-        const updatedPost = {
-            ...post,
-            comments: updateCommentsRecursively(post.comments, updatedComment, parentId),
-        };
-        updatePost({ ...postData, post: updatedPost });
+        if (postData) {
+            const updatedPost = {
+                ...postData.post,
+                comments: updateCommentsRecursively(postData.post.comments, updatedComment, parentId),
+            };
+            updatePost({ ...postData, post: updatedPost });
+        }
     };
 
-    return (
+    return postData ? (
         <>
             <Modal show={true} onClose={handleClosePostDetail}>
                 <div className="z-40 relative bg-white dark:bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
                     <div className="hidden md:flex flex-1 items-center border-r">
                         <img
-                            src={post.image_url}
+                            src={postData.post.image_url}
                             alt=""
                             loading="lazy"
                             className="max-w-full max-h-full w-full h-auto object-cover"
@@ -97,7 +102,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                         <PostItem postData={postData} show={false} updatePost={updatePost} isShowImg={false} />
                         <div className="md:hidden flex items-center -mx-4">
                             <img
-                                src={post.image_url}
+                                src={postData.post.image_url}
                                 alt=""
                                 loading="lazy"
                                 className="max-w-full max-h-full w-full h-auto object-cover"
@@ -109,7 +114,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                                     {postData.post.comments.map((item) => (
                                         <RenderComment
                                             key={item._id}
-                                            postId={post._id}
+                                            postId={postData.post._id}
                                             commentId={item._id}
                                             comment={item}
                                             updateComments={updateComments}
@@ -152,7 +157,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                     <div className="bg-primary w-96 text-center text-sm p-4 flex flex-col gap-2 rounded-xl">
                         <div className="py-4">
                             <h6 className="text-xl mb-1">Discard post?</h6>
-                            <span>If you leave, your edits won't be saved.</span>
+                            <span>If you leave, your edits won&apos;t be saved.</span>
                         </div>
                         <button
                             className="text-red-500 py-3 border-y border-black/30 dark:border-white/20"
@@ -167,7 +172,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                 </div>
             </Modal>
         </>
-    );
+    ) : null;
 };
 
 export default PostDetail;
@@ -219,23 +224,28 @@ const RenderItem: React.FC<{
     updateComments: (updatedComment: Comment, parentId: string) => void;
 }> = ({ user, comment, commentId, postId, isShowAll, setShowAll, updateComments }) => {
     const router = useRouter();
+    const { authUser } = useAuthContextProvider();
     const [isShow, setShow] = useState(false);
     const txtRef = useRef<HTMLTextAreaElement | null>(null);
+    useEffect(() => {}, [authUser]);
     useEffect(() => {}, [comment]);
     const handleReply = async () => {
         try {
-            if (comment && txtRef.current?.value.trim() != '') {
-                const resp = await postApi.replyComment({
-                    postId: postId,
-                    commentId: commentId,
-                    data: {
-                        parentId: commentId === comment._id ? '' : comment._id,
-                        comment_text: txtRef.current?.value.toString(),
-                    },
-                });
-                if (resp) {
-                    updateComments(resp.reply, comment._id);
-                    setShow(false);
+            if (authUser) {
+                if (comment && txtRef.current?.value.trim() != '') {
+                    const resp = await postApi.replyComment({
+                        postId: postId,
+                        commentId: commentId,
+                        data: {
+                            parentId: commentId === comment._id ? '' : comment._id,
+                            comment_text: txtRef.current?.value.toString(),
+                            user: authUser._id,
+                        },
+                    });
+                    if (resp) {
+                        updateComments(resp.reply, comment._id);
+                        setShow(false);
+                    }
                 }
             }
         } catch (err) {

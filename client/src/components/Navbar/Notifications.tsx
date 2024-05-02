@@ -103,7 +103,7 @@ const Notifications = ({ notifications }: { notifications: Notification[] }) => 
                 ) : (
                     <div className="flex flex-col text-center justify-center items-center mt-12 gap-4">
                         <span>Activity on your posts</span>
-                        <span>When someone likes or comments on one of your posts, you'll see it here.</span>
+                        <span>When someone likes or comments on one of your posts, you&apos;ll see it here.</span>
                     </div>
                 )}
             </div>

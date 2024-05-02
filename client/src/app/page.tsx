@@ -1,11 +1,11 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import MainLayout from './(main)/layout';
 import { PostProps } from '@/types';
 import PostItem from '@/components/post/PostItem';
 import SuggestedUsers from '@/components/SuggestedUsers';
 import { Oval } from 'react-loader-spinner';
 import postApi from '@/api/modules/post.api';
+import MainLayout from './MainLayout';
 
 const Home = () => {
     const [posts, setPosts] = useState<PostProps[]>([]);
