@@ -23,6 +23,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
                 if (response.status === 200) {
                     console.log('User logged in:', response.data.user);
                     setAuthUser(response.data.user);
+                    router.push('/');
                 } else {
                     router.push('/account/login');
                     throw new Error('Authentication failed!');

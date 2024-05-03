@@ -1,12 +1,13 @@
 'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import InputCus from '@/components/InputCus';
 import userApi, { userEndpoint } from '@/api/modules/user.api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 
 const Login = () => {
+    const searchParams = useSearchParams();
     const router = useRouter();
     const { updateAuthUser } = useAuthContextProvider();
     const [isErr, setErr] = useState(false);
@@ -15,6 +16,17 @@ const Login = () => {
         password: '',
     };
     const [formData, setFormData] = useState(initialData);
+
+    useEffect(() => {
+        handleLogin();
+    }, []);
+
+    const handleLogin = () => {
+        const token = searchParams.get('token');
+        if (token) {
+            localStorage.setItem('authToken', token);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

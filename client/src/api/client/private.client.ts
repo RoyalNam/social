@@ -10,6 +10,8 @@ const privateClient = axios.create({
 
 privateClient.interceptors.request.use(async (config) => {
     let token = localStorage.getItem('authToken');
+    console.log('token', token);
+
     if (!token) {
         const cookie = document.cookie;
         const tokenCookie = cookie ? cookie.split('; ').find((row) => row.startsWith('x-auth-cookie=')) : null;
@@ -23,6 +25,7 @@ privateClient.interceptors.request.use(async (config) => {
     if (!token) {
         throw new Error('Authentication token not found');
     }
+    console.log('endtoken', token);
 
     return {
         ...config,

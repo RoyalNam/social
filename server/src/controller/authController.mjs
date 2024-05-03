@@ -87,7 +87,8 @@ class AuthController {
                 }
                 const token = AuthController.signToken(req.user.id);
                 AuthController.setCookie(res, token);
-                res.redirect(CLIENT_URL);
+                console.log('token', token);
+                res.redirect(`${CLIENT_URL}/account/login?token=${token}`);
             });
         };
     }
@@ -97,7 +98,7 @@ class AuthController {
     }
 
     static setCookie(res, token) {
-        res.cookie('x-auth-cookie', token);
+        res.cookie('x-auth-cookie', token, { domain: 'social-api-wiwb.onrender.com', secure: true, httpOnly: true });
     }
 }
 
