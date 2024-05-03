@@ -40,8 +40,6 @@ class AuthController {
     }
 
     static handleLogout(req, res) {
-        res.clearCookie('x-auth-cookie');
-
         res.status(200).json({
             success: true,
             message: 'Logout successful!',
@@ -59,8 +57,7 @@ class AuthController {
                 });
             }
             const token = AuthController.signToken(user.id);
-            AuthController.setCookie(res, token);
-            res.json({ success: true, message: 'Authentication successful', token, user });
+            res.json({ success: true, message: 'Authentication successful', token });
         } catch (error) {
             console.error('Error during local authentication:', error);
             res.status(500).json({
@@ -86,7 +83,6 @@ class AuthController {
                     return next(err);
                 }
                 const token = AuthController.signToken(req.user.id);
-                AuthController.setCookie(res, token);
                 console.log('token', token);
                 res.redirect(`${CLIENT_URL}/account/login?token=${token}`);
             });
@@ -95,10 +91,6 @@ class AuthController {
 
     static signToken(userId) {
         return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    }
-
-    static setCookie(res, token) {
-        res.cookie('x-auth-cookie', token, { domain: 'social-api-wiwb.onrender.com', secure: true, httpOnly: true });
     }
 }
 

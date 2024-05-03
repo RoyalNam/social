@@ -1,11 +1,18 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import InputCus from '@/components/InputCus';
 import userApi, { userEndpoint } from '@/api/modules/user.api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 
+const LoginPage = () => {
+    return (
+        <Suspense fallback="loading....">
+            <Login />
+        </Suspense>
+    );
+};
 const Login = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -21,19 +28,26 @@ const Login = () => {
         handleLogin();
     }, []);
 
-    const handleLogin = () => {
-        const token = searchParams.get('token');
-        if (token) {
-            localStorage.setItem('authToken', token);
+    const handleLogin = async () => {
+        const searchToken = searchParams.get('token');
+        if (searchToken) {
+            localStorage.setItem('authToken', searchToken);
+            const userRes = await userApi.loginSuccess(searchToken);
+            if (userRes) {
+                console.log('User logged in:', userRes);
+                updateAuthUser(userRes.data.user);
+                router.push('/');
+            }
         }
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const userRes = await userApi.loginLocal(formData);
-        console.log('login', userRes);
-        if (userRes) {
-            updateAuthUser(userRes.user);
+        const userData = await userApi.loginLocal(formData);
+        console.log('users', userData);
+
+        if (userData) {
+            updateAuthUser(userData.user);
             router.push('/');
         } else {
             setErr(true);
@@ -102,4 +116,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default LoginPage;

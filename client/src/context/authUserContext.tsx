@@ -17,36 +17,8 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     const memoizedUser = useMemo(() => authUser, [authUser]);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await userApi.loginSuccess();
-                if (response.status === 200) {
-                    console.log('User logged in:', response.data.user);
-                    setAuthUser(response.data.user);
-                    router.push('/');
-                } else {
-                    router.push('/account/login');
-                    throw new Error('Authentication failed!');
-                }
-            } catch (error) {
-                console.error('Error during authentication:', error);
-                router.push('/account/login');
-            }
-        };
-
-        fetchData();
-
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === 'authToken') {
-                fetchData();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, []);
+        if (!authUser) router.push('/account/login');
+    }, [authUser]);
 
     const updateAuthUser = (updatedUser: User) => {
         setAuthUser(updatedUser);
