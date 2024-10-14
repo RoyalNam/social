@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import { initializeApp } from 'firebase/app';
 import config from './src/config/firebase';
 import router from './src/routes/index.mjs';
+import { app, server } from './src/socket/socket';
 
 dotenv.config();
 const app = express();
@@ -74,6 +75,6 @@ if (process.env.NODE_ENV === 'production') {
 const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
 const host = 'localhost';
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running on ${protocol}://${host}:${port}`);
 });

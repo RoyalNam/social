@@ -1,4 +1,5 @@
 import { User, Notification } from '../models';
+import { getReceiverSocketId, io } from '../socket/socket';
 
 class FollowController {
     static async addFollower(req, res) {
@@ -75,6 +76,11 @@ class FollowController {
                 sender: user._id,
             });
             await newNotification.save();
+
+            const receiverSocketId = getReceiverSocketId(followingUser._id);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            }
 
             // Send response
             res.status(200).json({ isFollowing: true, notification: newNotification });

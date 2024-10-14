@@ -1,4 +1,5 @@
 import { Notification, Post, User } from '../models';
+import { getReceiverSocketId, io } from '../socket/socket';
 
 class PostController {
     static async createPost(req, res) {
@@ -159,6 +160,12 @@ class PostController {
                     sender: currentUser._id,
                 });
                 await newNotification.save();
+
+                const ownerSocketId = getReceiverSocketId(post.user_id);
+                if (ownerSocketId) {
+                    io.to(ownerSocketId).emit('newNotification', newNotification);
+                }
+
                 await post.save();
 
                 return res.status(200).json({

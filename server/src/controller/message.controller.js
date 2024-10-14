@@ -1,4 +1,5 @@
 import { Conversation, Message, Notification, UserActivity } from '../models';
+import { getReceiverSocketId, io } from '../socket/socket';
 
 class MessageController {
     static async getMessages(req, res) {
@@ -85,6 +86,14 @@ class MessageController {
                 sender: senderId,
             });
             await newNotification.save();
+
+            // SOCKET IO FUNCTIONALITY WILL GO HERE
+            const receiverSocketId = getReceiverSocketId(receiverId);
+            if (receiverSocketId) {
+                // io.to(<socket_id>).emit() used to send events to specific client
+                io.to(receiverSocketId).emit('newMessage', newMessage);
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            }
 
             res.status(201).json({ message: newMessage, notification: newNotification });
         } catch (error) {

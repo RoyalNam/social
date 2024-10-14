@@ -1,4 +1,5 @@
 import { Post, Notification, User } from '../models';
+import { getReceiverSocketId, io } from '../socket/socket';
 
 const handleNotFound = (res, item) => {
     return res.status(404).json({ message: `${item} not found` });
@@ -32,6 +33,11 @@ class CommentController {
             });
 
             await newNotification.save();
+
+            const receiverSocketId = getReceiverSocketId(post.user_id);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            }
 
             res.status(201).json({
                 message: 'Comment added successfully',
@@ -135,6 +141,13 @@ class CommentController {
 
             await newNotification.save();
             await post.save();
+
+            const receiverSocketId = getReceiverSocketId(newNotification.user_id);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newNotification', newNotification);
+            } else {
+                console.warn(`Socket ID not found for user ID: ${newNotification.user_id}`);
+            }
 
             res.status(201).json({
                 message: parentId ? 'Nested reply added successfully' : 'Reply added successfully',
