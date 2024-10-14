@@ -7,6 +7,9 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
 import dotenv from 'dotenv';
+import { initializeApp } from 'firebase/app';
+import config from './src/config/firebase';
+import router from './src/routes/index.mjs';
 
 dotenv.config();
 const app = express();
@@ -54,11 +57,15 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+initializeApp(config.firebaseConfig);
+
 app.get('/', (request, response) => {
     console.log(request.session);
     request.session.visited = true;
     response.status(201).send({ msg: 'Hello World' });
 });
+
+app.use(router);
 
 if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
