@@ -7,11 +7,8 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
 import dotenv from 'dotenv';
-import config from './src/config/firebase.js';
-import { initializeApp } from 'firebase/app';
 import router from './src/routes/index.js';
 import { app, server } from './src/socket/socket.js';
-import { getStorage } from 'firebase/storage';
 
 dotenv.config();
 const port = process.env.PORT || 8080;
@@ -23,9 +20,6 @@ mongoose
         console.log(`Error: ${err}`);
         process.exit(1);
     });
-
-initializeApp(config.firebaseConfig);
-const storage = getStorage();
 
 app.use(
     cors({

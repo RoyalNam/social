@@ -24,7 +24,7 @@ class CommentController {
 
             if (!post) return handleNotFound(res, 'Post');
 
-            const newComment = post.comments[0];
+            const newComment = post.comments[post.comments.length - 1];
             const newNotification = new Notification({
                 user_id: post.user_id,
                 action: 'commented',
