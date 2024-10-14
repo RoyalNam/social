@@ -1,7 +1,7 @@
 import passport from 'passport';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
-import { User } from '../models';
+import { User } from '../models/index.js';
 import { comparePassword } from '../utils/helpers.js';
 
 dotenv.config();

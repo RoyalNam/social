@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticateToken } from '../utils/authMiddleware';
-import { PostController } from '../controller';
+import { authenticateToken } from '../utils/authMiddleware.js';
+import { PostController } from '../controller/index.js';
 
 const router = express.Router();
 

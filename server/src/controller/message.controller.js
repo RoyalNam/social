@@ -1,5 +1,5 @@
-import { Conversation, Message, Notification, UserActivity } from '../models';
-import { getReceiverSocketId, io } from '../socket/socket';
+import { Conversation, Message, Notification, UserActivity } from '../models/index.js';
+import { getReceiverSocketId, io } from '../socket/socket.js';
 
 class MessageController {
     static async getMessages(req, res) {

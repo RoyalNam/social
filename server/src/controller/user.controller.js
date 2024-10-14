@@ -1,6 +1,6 @@
 import { matchedData, validationResult } from 'express-validator';
-import { User, Notification } from '../models';
-import { hashPassword } from '../utils/helpers';
+import { User, Notification } from '../models/index.js';
+import { hashPassword } from '../utils/helpers.js';
 
 class UserController {
     static async getUsers(request, response) {

@@ -1,10 +1,10 @@
-import AuthController from './auth.controller';
-import CommentController from './comment.controller';
-import FollowController from './follow.controller';
-import MessageController from './message.controller';
-import PostController from './post.controller';
-import UserController from './user.controller';
-import { uploadImage } from './upload.controller';
+import AuthController from './auth.controller.js';
+import CommentController from './comment.controller.js';
+import FollowController from './follow.controller.js';
+import MessageController from './message.controller.js';
+import PostController from './post.controller.js';
+import UserController from './user.controller.js';
+import { uploadImage } from './upload.controller.js';
 
 export {
     AuthController,

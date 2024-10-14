@@ -1,11 +1,11 @@
 import express from 'express';
-import authRouter from './auth.router';
-import commentRouter from './comment.router';
-import followRouter from './follow.router';
-import messageRouter from './message.router';
-import postRouter from './post.router';
-import uploadRouter from './upload.router';
-import userRouter from './user.router';
+import authRouter from './auth.router.js';
+import commentRouter from './comment.router.js';
+import followRouter from './follow.router.js';
+import messageRouter from './message.router.js';
+import postRouter from './post.router.js';
+import uploadRouter from './upload.router.js';
+import userRouter from './user.router.js';
 
 const router = express.Router();
 

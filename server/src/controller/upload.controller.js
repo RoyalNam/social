@@ -1,9 +1,5 @@
-import { getStorage, ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 
-// Initialize Cloud Storage and get a reference to the service
-const storage = getStorage();
-
-// Function to handle image upload
 export const uploadImage = async (req, res) => {
     try {
         console.log('File:', req.file);

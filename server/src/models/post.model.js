@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { commentSchema } from './comment.mjs';
+import { commentSchema } from './comment.model.js';
 
 const postSchema = new Schema(
     {

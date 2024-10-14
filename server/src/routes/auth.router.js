@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import '../config/passport';
-import { authenticateToken } from '../utils/authMiddleware';
-import { AuthController } from '../controller';
+import '../config/passport.js';
+import { authenticateToken } from '../utils/authMiddleware.js';
+import { AuthController } from '../controller/index.js';
 
 const router = Router();
 

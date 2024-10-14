@@ -4,7 +4,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { User } from '../models';
+import { User } from '../models/index.js';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;

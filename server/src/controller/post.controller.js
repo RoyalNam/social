@@ -1,5 +1,5 @@
-import { Notification, Post, User } from '../models';
-import { getReceiverSocketId, io } from '../socket/socket';
+import { Notification, Post, User } from '../models/index.js';
+import { getReceiverSocketId, io } from '../socket/socket.js';
 
 class PostController {
     static async createPost(req, res) {

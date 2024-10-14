@@ -7,13 +7,13 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
 import dotenv from 'dotenv';
+import config from './src/config/firebase.js';
 import { initializeApp } from 'firebase/app';
-import config from './src/config/firebase';
-import router from './src/routes/index.mjs';
-import { app, server } from './src/socket/socket';
+import router from './src/routes/index.js';
+import { app, server } from './src/socket/socket.js';
+import { getStorage } from 'firebase/storage';
 
 dotenv.config();
-const app = express();
 const port = process.env.PORT || 8080;
 
 mongoose
@@ -23,6 +23,9 @@ mongoose
         console.log(`Error: ${err}`);
         process.exit(1);
     });
+
+initializeApp(config.firebaseConfig);
+const storage = getStorage();
 
 app.use(
     cors({
@@ -35,7 +38,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use(cookieParser('helloworld'));
+app.use(cookieParser(process.env.COOKIE_SECRET || 'fallbackSecret'));
 app.use(
     session({
         secret: process.env.SESSION_SECRET || 'fallbackSecret',
@@ -58,12 +61,10 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-initializeApp(config.firebaseConfig);
-
 app.get('/', (request, response) => {
     console.log(request.session);
     request.session.visited = true;
-    response.status(201).send({ msg: 'Hello World' });
+    response.status(200).send({ msg: 'Hello World' });
 });
 
 app.use(router);
@@ -73,7 +74,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-const host = 'localhost';
+const host = process.env.HOST || 'localhost';
 
 server.listen(port, () => {
     console.log(`Server running on ${protocol}://${host}:${port}`);

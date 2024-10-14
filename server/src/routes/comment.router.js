@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticateToken } from '../utils/authMiddleware';
-import { CommentController } from '../controller';
+import { authenticateToken } from '../utils/authMiddleware.js';
+import { CommentController } from '../controller/index.js';
 const router = Router();
 
 router.post('/api/posts/:postId/comments', authenticateToken, CommentController.addComment);

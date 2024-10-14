@@ -1,5 +1,5 @@
-import { Post, Notification, User } from '../models';
-import { getReceiverSocketId, io } from '../socket/socket';
+import { Post, Notification, User } from '../models/index.js';
+import { getReceiverSocketId, io } from '../socket/socket.js';
 
 const handleNotFound = (res, item) => {
     return res.status(404).json({ message: `${item} not found` });
