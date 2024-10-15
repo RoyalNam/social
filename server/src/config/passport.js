@@ -1,19 +1,18 @@
 import passport from 'passport';
-import dotenv from 'dotenv';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../models/index.js';
-dotenv.config();
+import { config } from './config.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = config.jwtSecret;
 passport.use(
     'google',
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientID: config.googleClientId,
+            clientSecret: config.googleClientSecret,
             callbackURL: '/auth/google/callback',
             scope: ['profile', 'email'],
         },
@@ -51,8 +50,8 @@ passport.use(
     'facebook',
     new FacebookStrategy(
         {
-            clientID: process.env.FACEBOOK_CLIENT_ID,
-            clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+            clientID: config.facebookClientId,
+            clientSecret: config.facebookClientSecret,
             callbackURL: '/auth/facebook/callback',
             scope: ['email'],
         },

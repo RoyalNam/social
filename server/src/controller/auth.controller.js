@@ -1,11 +1,10 @@
 import passport from 'passport';
-import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/index.js';
 import { comparePassword } from '../utils/helpers.js';
+import { config } from '../config/config.js';
 
-dotenv.config();
-const CLIENT_URL = process.env.CLIENT_URL;
+const CLIENT_URL = config.clientUrl;
 
 class AuthController {
     static handleLoginSuccess(req, res) {
@@ -90,7 +89,7 @@ class AuthController {
     }
 
     static signToken(userId) {
-        return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        return jwt.sign({ id: userId }, config.jwtSecret, { expiresIn: '24h' });
     }
 }
 

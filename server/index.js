@@ -6,15 +6,14 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
-import dotenv from 'dotenv';
 import router from './src/routes/index.js';
 import { app, server } from './src/socket/socket.js';
+import { config } from './src/config/config.js';
 
-dotenv.config();
-const port = process.env.PORT || 8080;
+const port = config.port || 8080;
 
 mongoose
-    .connect(process.env.MONGODB_URL)
+    .connect(config.mongoDBUrl)
     .then(() => console.log('Connected to database'))
     .catch((err) => {
         console.log(`Error: ${err}`);
@@ -32,19 +31,19 @@ app.use(
 );
 
 app.use(express.json());
-app.use(cookieParser(process.env.COOKIE_SECRET || 'fallbackSecret'));
+app.use(cookieParser(config.cookieSecret || 'fallbackSecret'));
 app.use(
     session({
-        secret: process.env.SESSION_SECRET || 'fallbackSecret',
+        secret: config.sessionSecret || 'fallbackSecret',
         saveUninitialized: true,
         resave: false,
         cookie: {
             maxAge: 60000 * 60,
-            secure: process.env.NODE_ENV === 'production',
+            secure: config.nodeEnv === 'production',
             httpOnly: true,
         },
         store: MongoStore.create({
-            clientPromise: mongoose.connection.asPromise().then((conn) => conn.getClient()), // Sử dụng clientPromise
+            clientPromise: mongoose.connection.asPromise().then((conn) => conn.getClient()),
         }),
     }),
 );
@@ -63,12 +62,12 @@ app.get('/', (request, response) => {
 
 app.use(router);
 
-if (process.env.NODE_ENV === 'production') {
+if (config.nodeEnv === 'production') {
     app.set('trust proxy', 1);
 }
 
-const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-const host = process.env.HOST || 'localhost';
+const protocol = config.nodeEnv === 'production' ? 'https' : 'http';
+const host = config.host || 'localhost';
 
 server.listen(port, () => {
     console.log(`Server running on ${protocol}://${host}:${port}`);

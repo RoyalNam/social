@@ -2,9 +2,9 @@ import express from 'express';
 import multer from 'multer';
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
-import config from '../config/firebase.js';
+import { config } from '../config/config.js';
 
-initializeApp(config.firebaseConfig);
+initializeApp(config.firebase);
 const storage = getStorage();
 
 const router = express.Router();
