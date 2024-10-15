@@ -4,14 +4,5 @@ import FollowController from './follow.controller.js';
 import MessageController from './message.controller.js';
 import PostController from './post.controller.js';
 import UserController from './user.controller.js';
-import { uploadImage } from './upload.controller.js';
 
-export {
-    AuthController,
-    CommentController,
-    FollowController,
-    MessageController,
-    PostController,
-    UserController,
-    uploadImage,
-};
+export { AuthController, CommentController, FollowController, MessageController, PostController, UserController };
