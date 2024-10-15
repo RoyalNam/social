@@ -22,7 +22,7 @@ const InputCus = ({ item }: { item: InputProps }) => {
 
     return (
         <div>
-            <div className='relative group border rounded-md min-w-80 focus-within:border-blue-400'>
+            <div className="relative group border rounded-md min-w-80 focus-within:border-blue-400">
                 <input
                     type={typeVal}
                     placeholder={item.placeholder}
@@ -35,15 +35,15 @@ const InputCus = ({ item }: { item: InputProps }) => {
                     }
                     onBlur={(e) => handleBlur(e.target.value.trim())}
                     onFocus={handleFocus}
-                    className='w-full px-4 pt-2 pb-1 bg-transparent outline-none'
+                    className="w-full px-4 pt-2 pb-1 bg-transparent outline-none"
                 />
                 {item.type === 'password' && !isEmpty && (
                     <span
-                        className='absolute right-2 top-1/2 -translate-y-1/2 group-hover:block hidden'
+                        className="absolute right-2 top-1/2 -translate-y-1/2 group-hover:block hidden"
                         onClick={() => {
                             setType(typeVal === 'password' ? 'text' : 'password');
                         }}
-                        title='Show'
+                        title="Show"
                     >
                         <BsEye />
                     </span>
@@ -53,7 +53,7 @@ const InputCus = ({ item }: { item: InputProps }) => {
                 >
                     {item.placeholder}
                 </span>
-                {item.err && <span className='absolute top-10 inset-0 text-red-500 text-xs'>{item.err}</span>}
+                {item.err && <span className="absolute top-10 inset-0 text-red-500 text-xs">{item.err}</span>}
             </div>
         </div>
     );
