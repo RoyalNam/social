@@ -1,14 +1,14 @@
 import axios from 'axios';
-import privateClient, { baseURL } from '../client/private.client';
 import publicClient from '../client/public.client';
+import { serverUrl } from '@/configs/config';
 
 export const userEndpoint = {
     auth: {
-        facebook: `${baseURL}/auth/facebook/`,
-        google: `${baseURL}/auth/google/`,
-        logout: `${baseURL}/auth/logout/`,
-        local: `${baseURL}/auth/local/`,
-        login_success: `${baseURL}/auth/login/success`,
+        facebook: `${serverUrl}/auth/facebook/`,
+        google: `${serverUrl}/auth/google/`,
+        logout: `${serverUrl}/auth/logout/`,
+        local: `${serverUrl}/auth/local/`,
+        login_success: `${serverUrl}/auth/login/success`,
         register: '/users',
     },
     user: ({ id }: { id: string }) => `/users/${id}`,

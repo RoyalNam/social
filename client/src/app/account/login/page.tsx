@@ -6,6 +6,7 @@ import Link from 'next/link';
 import userApi, { userEndpoint } from '@/api/modules/user.api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import InputCus from '@/components/InputCus';
+import { serverUrl } from '@/configs/config';
 
 const LoginPage = () => {
     return (

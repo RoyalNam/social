@@ -3,7 +3,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import io, { Socket } from 'socket.io-client';
 
 import { useAuthContextProvider } from './authUserContext';
-import { baseURL } from '@/api/client/private.client';
+import { serverUrl } from '@/configs/config';
 
 interface SocketContextType {
     socket: Socket | null;
@@ -18,7 +18,7 @@ export const SocketContextProvider = ({ children }: { children: React.ReactNode 
 
     useEffect(() => {
         if (authUser) {
-            const newSocket = io(baseURL, {
+            const newSocket = io(serverUrl, {
                 query: {
                     userId: authUser._id,
                 },

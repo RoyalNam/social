@@ -1,10 +1,9 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import queryString from 'query-string';
-
-export const baseURL = 'http://localhost:8080';
+import { serverUrl } from '@/configs/config';
 
 const publicClient = axios.create({
-    baseURL: `${baseURL}/api`,
+    baseURL: `${serverUrl}/api`,
     paramsSerializer: (params) => queryString.stringify(params),
 });
 

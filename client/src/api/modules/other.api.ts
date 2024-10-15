@@ -1,9 +1,10 @@
 import axios from 'axios';
-import publicClient, { baseURL } from '../client/public.client';
+import publicClient from '../client/public.client';
+import { serverUrl } from '@/configs/config';
 
 const endpoint = {
     user_activity: ({ userId }: { userId: string }) => `/activity/${userId}`,
-    uploadImage: `${baseURL}/api/uploadImage`,
+    uploadImage: `${serverUrl}/api/uploadImage`,
 };
 
 const otherApi = {
