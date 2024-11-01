@@ -12,15 +12,18 @@ const Home = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [fetchingPosts, setFetchingPosts] = useState(false);
+    const [fetchError, setFetchError] = useState(false);
 
     useEffect(() => {
-        getRandomPosts();
+        if (!fetchError) {
+            getRandomPosts();
+        }
     }, []);
 
     const getRandomPosts = async () => {
         try {
             setLoading(false);
-            if (fetchingPosts) return;
+            if (fetchingPosts || fetchError) return;
 
             setFetchingPosts(true);
             const previousPostIds = posts.map((post) => post._id);
@@ -30,6 +33,7 @@ const Home = () => {
             }
         } catch (err) {
             console.error(err);
+            setFetchError(true);
         } finally {
             setFetchingPosts(false);
             setLoading(true);
@@ -52,21 +56,6 @@ const Home = () => {
                         ))
                     ) : (
                         <div>No posts</div>
-                    )}
-
-                    {!loading && (
-                        <div>
-                            <Oval
-                                visible={true}
-                                height='50'
-                                width='50'
-                                color='#000'
-                                ariaLabel='oval-loading'
-                                wrapperStyle={{}}
-                                wrapperClass=''
-                                secondaryColor='#ccc'
-                            />
-                        </div>
                     )}
                 </div>
                 <div className='flex-1 hidden lg:block'>

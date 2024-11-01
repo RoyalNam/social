@@ -7,6 +7,7 @@ const MainLayout: React.FC<{ children: React.ReactNode; fetchData?: () => void }
     const { authUser } = useAuthContextProvider();
     const mainRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
+    const [isFetching, setIsFetching] = useState(false);
 
     useEffect(() => {
         if (authUser) setLoading(false);
@@ -16,14 +17,16 @@ const MainLayout: React.FC<{ children: React.ReactNode; fetchData?: () => void }
         if (fetchData) {
             const handleScroll = async () => {
                 const mainElement = mainRef.current;
-                if (!mainElement) return;
+                if (!mainElement || isFetching) return;
 
                 const scrollHeight = mainElement.scrollHeight;
                 const scrollTop = mainElement.scrollTop;
                 const clientHeight = mainElement.clientHeight;
 
                 if (scrollTop + clientHeight >= scrollHeight - 50) {
-                    fetchData();
+                    setIsFetching(true);
+                    await fetchData();
+                    setIsFetching(false);
                 }
             };
 
@@ -38,13 +41,13 @@ const MainLayout: React.FC<{ children: React.ReactNode; fetchData?: () => void }
                 }
             };
         }
-    }, [fetchData]);
+    }, [fetchData, isFetching]);
 
     return !loading ? (
-        <div className="flex h-screen flex-col md:flex-row select-none">
+        <div className='flex h-screen flex-col md:flex-row select-none'>
             <Navbar />
-            <main ref={mainRef} className="flex-1 overflow-y-auto scroll_thin">
-                <div className="mx-auto max-w-[935px] py-10 px-6 h-full">{children}</div>
+            <main ref={mainRef} className='flex-1 overflow-y-auto scroll_thin'>
+                <div className='mx-auto max-w-[935px] py-10 px-6 h-full'>{children}</div>
             </main>
         </div>
     ) : null;

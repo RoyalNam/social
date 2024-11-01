@@ -13,14 +13,18 @@ const Explore = () => {
     const [loading, setLoading] = useState(true);
     const [fetchingPosts, setFetchingPosts] = useState(false);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [fetchError, setFetchError] = useState(false);
+
     useEffect(() => {
-        getRandomPosts();
+        if (!fetchError) {
+            getRandomPosts();
+        }
     }, []);
 
     const getRandomPosts = async () => {
         try {
             setLoading(false);
-            if (fetchingPosts) return;
+            if (fetchingPosts || fetchError) return;
 
             setFetchingPosts(true);
             const previousPostIds = posts.map((post) => post._id);
@@ -30,6 +34,7 @@ const Explore = () => {
             }
         } catch (err) {
             console.error(err);
+            setFetchError(true);
         } finally {
             setFetchingPosts(false);
             setLoading(true);
@@ -42,7 +47,7 @@ const Explore = () => {
 
     return (
         <MainLayout fetchData={getRandomPosts}>
-            <div className="w-full grid grid-cols-3 gap-1">
+            <div className='w-full grid grid-cols-3 gap-1'>
                 {posts.length > 0 ? (
                     posts.map((item, idx) => (
                         <div key={idx}>
@@ -56,13 +61,13 @@ const Explore = () => {
                     <div>
                         <Oval
                             visible={true}
-                            height="50"
-                            width="50"
-                            color="#000"
-                            ariaLabel="oval-loading"
+                            height='50'
+                            width='50'
+                            color='#000'
+                            ariaLabel='oval-loading'
                             wrapperStyle={{}}
-                            wrapperClass=""
-                            secondaryColor="#ccc"
+                            wrapperClass=''
+                            secondaryColor='#ccc'
                         />
                     </div>
                 )}
