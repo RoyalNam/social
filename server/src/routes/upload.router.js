@@ -51,6 +51,6 @@ const upload = multer({
     },
 });
 
-router.post('/api/uploadImage', upload.single('filename'), uploadImage);
+router.post('/uploadImage', upload.single('filename'), uploadImage);
 
 export default router;

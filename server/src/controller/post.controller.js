@@ -22,7 +22,7 @@ class PostController {
             const followerIds = currentUser.followers;
 
             for (const followerId of followerIds) {
-                const notification = await NotificationController.createNotification({
+                const notification = await NotificationController.createNotification(null, null, {
                     type: 'post',
                     senderId: currentUser._id,
                     receiverId: followerId,
@@ -172,7 +172,7 @@ class PostController {
             } else {
                 post.likes.push(currentUser._id);
 
-                const newNotification = await NotificationController.createNotification({
+                const newNotification = await NotificationController.createNotification(null, null, {
                     type: 'like',
                     senderId: currentUser._id,
                     receiverId: post.user_id,

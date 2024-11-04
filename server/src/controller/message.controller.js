@@ -79,7 +79,7 @@ class MessageController {
                 conversation.messages.unshift(newMessage._id);
             }
             await conversation.save();
-            const newNotification = await NotificationController.createNotification({
+            const newNotification = await NotificationController.createNotification(null, null, {
                 type: 'message',
                 senderId: senderId,
                 receiverId: receiverId,

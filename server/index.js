@@ -60,7 +60,7 @@ app.get('/', (request, response) => {
     response.status(200).send({ msg: 'Hello World' });
 });
 
-app.use(router);
+app.use('/api', router);
 
 if (config.nodeEnv === 'production') {
     app.set('trust proxy', 1);

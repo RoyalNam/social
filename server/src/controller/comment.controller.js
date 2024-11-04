@@ -26,7 +26,7 @@ class CommentController {
             if (!post) return handleNotFound(res, 'Post');
 
             const newComment = post.comments[post.comments.length - 1];
-            const newNotification = await NotificationController.createNotification({
+            const newNotification = await NotificationController.createNotification(null, null, {
                 type: 'comment',
                 senderId: currentUser._id,
                 receiverId: post.user_id,
@@ -128,7 +128,7 @@ class CommentController {
                 receiverId = targetComment.user_id;
             }
 
-            const newNotification = await NotificationController.createNotification({
+            const newNotification = await NotificationController.createNotification(null, null, {
                 type: 'comment',
                 senderId: currentUser._id,
                 receiverId: receiverId,

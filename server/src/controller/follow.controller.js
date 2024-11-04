@@ -27,7 +27,7 @@ class FollowController {
             followingUser.followers.push(currentUser._id);
             await Promise.all([currentUser.save(), followingUser.save()]);
 
-            const newNotification = await NotificationController.createNotification({
+            const newNotification = await NotificationController.createNotification(null, null, {
                 type: 'follow',
                 senderId: currentUser._id,
                 receiverId: followingUser._id,

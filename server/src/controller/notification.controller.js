@@ -11,8 +11,8 @@ class NotificationController {
         }
     }
 
-    static async createNotification(req, res) {
-        const { type, senderId, receiverId, postId, commentId, message } = req.body;
+    static async createNotification(req, res, data = null) {
+        const { type, senderId, receiverId, postId, commentId, message } = data || req.body;
 
         try {
             const notification = new Notification({
@@ -26,9 +26,18 @@ class NotificationController {
             });
 
             await notification.save();
-            res.status(201).json(notification);
+
+            if (!data) {
+                res.status(201).json(notification);
+            } else {
+                return notification;
+            }
         } catch (error) {
-            res.status(500).json({ error: 'Error creating notification' });
+            if (!data) {
+                res.status(500).json({ error: 'Error creating notification' });
+            } else {
+                throw error;
+            }
         }
     }
 

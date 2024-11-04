@@ -5,13 +5,12 @@ import { UserController } from '../controller/index.js';
 
 const router = Router();
 
-router.get('/api/users', UserController.getUsers);
-router.get('/api/users/:id', UserController.getUserById);
-router.get('/api/users/:id/basic_info', UserController.getUserBasicInfo);
-router.get('/api/users/:id/suggested_user', UserController.getRandomUsers);
-router.get('/api/users/:id/notifications', UserController.getNotifications);
-router.post('/api/users', checkSchema(createUserValidationSchema), UserController.createUser);
-router.put('/api/users/:id', UserController.updateUser);
-router.delete('/api/users/:id', UserController.deleteUser);
+router.get('/users', UserController.getUsers);
+router.get('/:id', UserController.getUserById);
+router.get('/:id/basic_info', UserController.getUserBasicInfo);
+router.get('/:id/suggested_user', UserController.getRandomUsers);
+router.post('/users', checkSchema(createUserValidationSchema), UserController.createUser);
+router.put('/:id', UserController.updateUser);
+router.delete('/:id', UserController.deleteUser);
 
 export default router;
