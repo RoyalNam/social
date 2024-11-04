@@ -1,5 +1,6 @@
-import { Notification, Post, User } from '../models/index.js';
+import { Post } from '../models/index.js';
 import { getReceiverSocketId, io } from '../socket/socket.js';
+import { NotificationController } from '../controller/index.js';
 
 class PostController {
     static async createPost(req, res) {
@@ -17,6 +18,22 @@ class PostController {
             currentUser.posts.push(savedPost._id);
 
             await currentUser.save();
+
+            const followerIds = currentUser.followers;
+
+            for (const followerId of followerIds) {
+                const notification = await NotificationController.createNotification({
+                    type: 'post',
+                    senderId: currentUser._id,
+                    receiverId: followerId,
+                    postId: savedPost._id,
+                });
+
+                const receiverSocketId = getReceiverSocketId(followerId);
+                if (receiverSocketId) {
+                    io.to(receiverSocketId).emit('newNotification', notification);
+                }
+            }
 
             res.status(201).json(savedPost);
         } catch (error) {
@@ -140,11 +157,13 @@ class PostController {
 
             if (isLiked) {
                 post.likes = post.likes.filter((like) => like.toString() !== currentUser._id.toString());
-                await Notification.deleteOne({
-                    user_id: post.user_id,
-                    sender: currentUser._id,
-                    action: 'liked',
+
+                await NotificationController.deleteNotification({
+                    type: 'like',
+                    senderId: currentUser._id,
+                    receiverId: post.user_id,
                 });
+
                 await post.save();
                 return res.status(200).json({
                     message: 'Post has not been liked',
@@ -153,13 +172,11 @@ class PostController {
             } else {
                 post.likes.push(currentUser._id);
 
-                const newNotification = new Notification({
-                    user_id: post.user_id,
-                    action: 'liked',
-                    content: `${currentUser.name} liked your post`,
-                    sender: currentUser._id,
+                const newNotification = await NotificationController.createNotification({
+                    type: 'like',
+                    senderId: currentUser._id,
+                    receiverId: post.user_id,
                 });
-                await newNotification.save();
 
                 const ownerSocketId = getReceiverSocketId(post.user_id);
                 if (ownerSocketId) {

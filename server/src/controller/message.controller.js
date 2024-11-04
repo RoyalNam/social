@@ -1,5 +1,6 @@
-import { Conversation, Message, Notification, UserActivity } from '../models/index.js';
+import { Conversation, Message, UserActivity } from '../models/index.js';
 import { getReceiverSocketId, io } from '../socket/socket.js';
+import { NotificationController } from '../controller/index.js';
 
 class MessageController {
     static async getMessages(req, res) {
@@ -78,14 +79,12 @@ class MessageController {
                 conversation.messages.unshift(newMessage._id);
             }
             await conversation.save();
-
-            const newNotification = new Notification({
-                user_id: receiverId,
-                action: 'messaged',
-                content: `New message from ${req.user.name}`,
-                sender: senderId,
+            const newNotification = await NotificationController.createNotification({
+                type: 'message',
+                senderId: senderId,
+                receiverId: receiverId,
+                message: message,
             });
-            await newNotification.save();
 
             // SOCKET IO FUNCTIONALITY WILL GO HERE
             const receiverSocketId = getReceiverSocketId(receiverId);

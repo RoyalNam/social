@@ -1,5 +1,6 @@
-import { Post, Notification, User } from '../models/index.js';
+import { Post } from '../models/index.js';
 import { getReceiverSocketId, io } from '../socket/socket.js';
+import { NotificationController } from '../controller/index.js';
 
 const handleNotFound = (res, item) => {
     return res.status(404).json({ message: `${item} not found` });
@@ -25,14 +26,12 @@ class CommentController {
             if (!post) return handleNotFound(res, 'Post');
 
             const newComment = post.comments[post.comments.length - 1];
-            const newNotification = new Notification({
-                user_id: post.user_id,
-                action: 'commented',
-                content: `New comment by ${currentUser.name} on your post`,
-                sender: currentUser._id,
+            const newNotification = await NotificationController.createNotification({
+                type: 'comment',
+                senderId: currentUser._id,
+                receiverId: post.user_id,
+                postId: post._id,
             });
-
-            await newNotification.save();
 
             const receiverSocketId = getReceiverSocketId(post.user_id);
             if (receiverSocketId) {
@@ -101,7 +100,7 @@ class CommentController {
             const targetComment = post.comments.find((comment) => comment._id.toString() === commentId);
             if (!targetComment) return handleNotFound(res, 'Comment');
 
-            let newReply, newNotification;
+            let newReply, receiverId;
 
             // Handle parent reply
             if (parentId) {
@@ -121,25 +120,21 @@ class CommentController {
                 parentReplyToUpdate.replies.push({ user_id: currentUser._id, comment_text });
                 newReply = parentReplyToUpdate.replies.slice(-1)[0];
 
-                newNotification = new Notification({
-                    user_id: parentReplyToUpdate.user_id._id,
-                    action: 'replied',
-                    content: `New reply by ${currentUser.name}`,
-                    sender: currentUser._id,
-                });
+                receiverId = parentReplyToUpdate.user_id;
             } else {
                 targetComment.replies.push({ user_id: currentUser._id, comment_text });
                 newReply = targetComment.replies.slice(-1)[0];
 
-                newNotification = new Notification({
-                    user_id: targetComment.user_id._id,
-                    action: 'replied',
-                    content: `New reply by ${currentUser.name}`,
-                    sender: currentUser._id,
-                });
+                receiverId = targetComment.user_id;
             }
 
-            await newNotification.save();
+            const newNotification = await NotificationController.createNotification({
+                type: 'comment',
+                senderId: currentUser._id,
+                receiverId: receiverId,
+                postId: postId,
+                commentId: parentId ? parentId : commentId,
+            });
             await post.save();
 
             const receiverSocketId = getReceiverSocketId(newNotification.user_id);
