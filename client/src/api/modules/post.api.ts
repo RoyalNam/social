@@ -4,7 +4,7 @@ import publicClient from '../client/public.client';
 const postBaseUrl = '/posts';
 const postEndpoint = {
     create_post: postBaseUrl,
-    get_post: ({ postId }: { postId: string }) => `/posts/${postId}`,
+    get_post: ({ postId }: { postId: string }) => `${postBaseUrl}/${postId}`,
     get_posts: ({
         numberOfPostsToShow,
         previousPostIds,

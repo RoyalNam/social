@@ -1,10 +1,10 @@
-interface MinimalUser {
+interface IMinimalUser {
     _id: string;
     name: string;
     avatar: string;
 }
 
-interface User {
+interface IUser {
     _id: string;
     name: string;
     email: string;
@@ -23,16 +23,16 @@ interface User {
     updatedAt: Date;
 }
 
-interface Comment {
+interface IComment {
     _id: string;
     user_id: string;
     comment_text: string;
-    replies: Comment[];
+    replies: IComment[];
     createdAt: Date;
     updatedAt: Date;
 }
 
-interface Conversation {
+interface IConversation {
     _id: string;
     participants: string[];
     messages: string[];
@@ -40,7 +40,7 @@ interface Conversation {
     updatedAt: Date;
 }
 
-interface Message {
+interface IMessage {
     _id: string;
     senderId: string;
     receiverId: string;
@@ -49,7 +49,7 @@ interface Message {
     updatedAt: Date;
 }
 
-interface Notification {
+interface INotification {
     _id: string;
     user_id: string;
     action: string;
@@ -60,18 +60,18 @@ interface Notification {
     updatedAt: Date;
 }
 
-interface Post {
+interface IPost {
     _id: string;
     user_id: string;
     image_url?: string;
     caption?: string;
-    comments: Comment[];
+    comments: IComment[];
     likes: string[];
     createdAt: Date;
     updatedAt: Date;
 }
 
-interface UserActivity {
+interface IUserActivity {
     _id: string;
     user_id: string;
     last_active: Date;
@@ -79,4 +79,4 @@ interface UserActivity {
     updatedAt: Date;
 }
 
-export type { MinimalUser, User, Comment, Conversation, Message, Notification, Post, UserActivity };
+export type { IMinimalUser, IUser, IComment, IConversation, IMessage, INotification, IPost, IUserActivity };

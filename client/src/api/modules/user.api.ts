@@ -4,17 +4,17 @@ import { serverUrl } from '@/configs/config';
 
 export const userEndpoint = {
     auth: {
-        facebook: `${serverUrl}/auth/facebook/`,
-        google: `${serverUrl}/auth/google/`,
-        logout: `${serverUrl}/auth/logout/`,
-        local: `${serverUrl}/auth/local/`,
-        login_success: `${serverUrl}/auth/login/success`,
+        facebook: `${serverUrl}/api/auth/facebook/`,
+        google: `${serverUrl}/api/auth/google/`,
+        logout: `${serverUrl}/api/auth/logout/`,
+        local: `${serverUrl}/api/auth/local/`,
+        login_success: `${serverUrl}/api/auth/login/success`,
         register: '/users',
     },
-    user: ({ id }: { id: string }) => `/users/${id}`,
+    user: ({ id }: { id: string }) => `/${id}`,
     basic_info: ({ id }: { id: string }) => `${userEndpoint.user({ id })}/basic_info`,
     suggested_user: ({ id }: { id: string }) => `${userEndpoint.user({ id })}/suggested_user`,
-    notifications: ({ id }: { id: string }) => `${userEndpoint.user({ id })}/notifications`,
+    notifications: ({ id }: { id: string }) => `${id}/notification`,
     search: ({ val }: { val: string }) => `/users?filter=name&value=${val}`,
 };
 const userApi = {
