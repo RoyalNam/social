@@ -13,7 +13,7 @@ const postEndpoint = {
         previousPostIds: string[];
     }) => {
         const previousIdsParam = previousPostIds.length ? `&previousPostIds=${previousPostIds.join(',')}` : '';
-        return `${postBaseUrl}?numberOfPostsToShow=${numberOfPostsToShow}${previousIdsParam}`;
+        return `${postBaseUrl}/random?numberOfPostsToShow=${numberOfPostsToShow}${previousIdsParam}`;
     },
     toggle_save_post: `${postBaseUrl}/save`,
     toggle_like_post: ({ postId }: { postId: string }) => `${postEndpoint.get_post({ postId })}/like`,

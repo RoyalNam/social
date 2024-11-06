@@ -2,17 +2,17 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { User } from '@/types';
+import { IUser } from '@/types';
 
 interface AuthContextType {
-    authUser: User | null;
-    updateAuthUser: (updateAuthUser: User) => void;
+    authUser: IUser | null;
+    updateAuthUser: (updateAuthUser: IUser) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
-    const [authUser, setAuthUser] = useState<User | null>(null);
+    const [authUser, setAuthUser] = useState<IUser | null>(null);
     const router = useRouter();
     const memoizedUser = useMemo(() => authUser, [authUser]);
 
@@ -20,7 +20,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         if (!authUser) router.push('/account/login');
     }, [authUser]);
 
-    const updateAuthUser = (updatedUser: User) => {
+    const updateAuthUser = (updatedUser: IUser) => {
         setAuthUser(updatedUser);
     };
 

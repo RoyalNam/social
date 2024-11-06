@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuthContextProvider } from '@/context/authUserContext';
-import { MinimalUser } from '@/types';
+import { IMinimalUser } from '@/types';
 import { followApi, userApi } from '@/api/modules';
 
 const SuggestedUsers = () => {
     const router = useRouter();
     const { authUser, updateAuthUser } = useAuthContextProvider();
-    const [suggestedUsers, setSuggestedUsers] = useState<MinimalUser[]>([]);
+    const [suggestedUsers, setSuggestedUsers] = useState<IMinimalUser[]>([]);
     const [isFetch, setFetch] = useState(true);
 
     useEffect(() => {
@@ -29,18 +29,18 @@ const SuggestedUsers = () => {
         if (authUser) fetchData();
     }, [authUser]);
 
-    const handleFollowing = async (author: MinimalUser) => {
+    const handleFollowing = async (author: IMinimalUser) => {
         try {
             if (authUser) {
                 const following = authUser.following.includes(author._id)
-                    ? await followApi.unFollower({ authId: authUser._id, userId: author._id })
-                    : await followApi.followUser({ authId: authUser._id, userId: author._id });
+                    ? await followApi.unFollower({ followingId: author._id })
+                    : await followApi.followUser({ followingId: author._id });
 
                 const updatedUser = { ...authUser };
                 if (following.isFollowing) {
                     updatedUser.following.push(author._id);
                 } else {
-                    updatedUser.following = updatedUser.following.filter((id) => id !== author._id);
+                    updatedUser.following = updatedUser.following.filter((id: any) => id !== author._id);
                 }
                 updateAuthUser(updatedUser);
             }
@@ -51,21 +51,21 @@ const SuggestedUsers = () => {
 
     return (
         authUser && (
-            <div className="">
-                <h5 className="font-semibold text-xl mb-4">Suggested</h5>
-                <div className="flex flex-col">
+            <div className=''>
+                <h5 className='font-semibold text-xl mb-4'>Suggested</h5>
+                <div className='flex flex-col'>
                     {suggestedUsers.length > 0 ? (
                         suggestedUsers.map((item) => (
                             <div
                                 key={item._id}
-                                className="flex justify-between px-4 py-2 rounded items-center hover:bg-white/15 cursor-pointer"
+                                className='flex justify-between px-4 py-2 rounded items-center hover:bg-white/15 cursor-pointer'
                                 onClick={() => router.push(`/profile/${item._id}`)}
                             >
-                                <div className="flex flex-1 items-center gap-2">
+                                <div className='flex flex-1 items-center gap-2'>
                                     <img
                                         src={item.avatar ?? '/user.png'}
-                                        alt=""
-                                        className="w-12 block rounded-full h-12"
+                                        alt=''
+                                        className='w-12 block rounded-full h-12'
                                     />
                                     <h5>{item.name}</h5>
                                 </div>

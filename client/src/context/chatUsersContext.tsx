@@ -1,23 +1,23 @@
 'use client';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import { MinimalUser, UserActivity } from '@/types';
+import { IMinimalUser, IUserActivity } from '@/types';
 import { useAuthContextProvider } from './authUserContext';
 import { messageApi, otherApi, userApi } from '@/api/modules';
 
 interface ChatUsersContextType {
-    chatUsers: MinimalUser[];
-    usersActivity: UserActivity[];
-    updateChatUsers: (updatedUser: MinimalUser) => void;
-    updateUsersActivity: (updatedUser: UserActivity) => void;
+    chatUsers: IMinimalUser[];
+    usersActivity: IUserActivity[];
+    updateChatUsers: (updatedUser: IMinimalUser) => void;
+    updateUsersActivity: (updatedUser: IUserActivity) => void;
 }
 
 const ChatUsersContext = createContext<ChatUsersContextType | null>(null);
 
 const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) => {
     const { authUser } = useAuthContextProvider();
-    const [chatUsers, setChatUsers] = useState<MinimalUser[]>([]);
-    const [usersActivity, setUsersActivity] = useState<UserActivity[]>([]);
+    const [chatUsers, setChatUsers] = useState<IMinimalUser[]>([]);
+    const [usersActivity, setUsersActivity] = useState<IUserActivity[]>([]);
     const [chatUsersUpdated, setChatUsersUpdated] = useState<boolean>(false);
 
     useEffect(() => {
@@ -25,6 +25,7 @@ const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) =
             if (authUser) {
                 try {
                     const activeChatUserIds: string[] = await messageApi.getUsersChat();
+                    console.log('activatechat', activeChatUserIds);
 
                     if (activeChatUserIds && activeChatUserIds.length > 0) {
                         const chatUserData = await userApi.getBasicInfoByIds(activeChatUserIds);
@@ -32,9 +33,11 @@ const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) =
                         setUsersActivity(activeUserActivityData);
 
                         if (chatUserData && chatUserData.length > 0)
-                            setChatUsers(chatUserData.filter((user) => user !== null) as MinimalUser[]);
+                            setChatUsers(chatUserData.filter((user) => user !== null) as IMinimalUser[]);
                     }
                 } catch (err) {
+                    console.error('xxxxxxx', err);
+
                     throw err;
                 }
             }
@@ -56,12 +59,12 @@ const ChatUsersContextProvider = ({ children }: { children: React.ReactNode }) =
         }
     }, [chatUsersUpdated]);
 
-    const updateChatUsers = (updatedUser: MinimalUser) => {
+    const updateChatUsers = (updatedUser: IMinimalUser) => {
         setChatUsers((prevUsers) => [updatedUser, ...prevUsers]);
         setChatUsersUpdated(true);
     };
 
-    const updateUsersActivity = (updatedUser: UserActivity) => {
+    const updateUsersActivity = (updatedUser: IUserActivity) => {
         setUsersActivity((prevUsers) => [updatedUser, ...prevUsers]);
     };
 

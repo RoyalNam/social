@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Post } from '../models/index.js';
 import { getReceiverSocketId, io } from '../socket/socket.js';
 import { NotificationController } from '../controller/index.js';
@@ -91,6 +92,9 @@ class PostController {
     static async GetPostById(req, res) {
         try {
             const postId = req.params.postId;
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                return res.status(400).json({ message: 'Invalid post ID format' });
+            }
 
             const post = await Post.findById(postId);
 

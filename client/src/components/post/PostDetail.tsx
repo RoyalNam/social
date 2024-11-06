@@ -4,15 +4,15 @@ import { useRouter } from 'next/navigation';
 import { BsArrowReturnRight, BsSend, BsX } from 'react-icons/bs';
 
 import Modal from '../Modal';
-import { Comment, MinimalUser, Post } from '@/types';
+import { IComment, IMinimalUser, IPost } from '@/types';
 import { timeAgoFromPast } from '@/utils';
 import PostItem from './PostItem';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import { postApi, userApi } from '@/api/modules';
 
 export interface PostDetailProps {
-    postData: Post | null;
-    updatePost: (post: Post) => void;
+    postData: IPost | null;
+    updatePost: (post: IPost) => void;
     closePostDetail: () => void;
 }
 
@@ -58,7 +58,11 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
         }
     };
 
-    const updateCommentsRecursively = (comments: Comment[], updatedComment: Comment, parentId: string): Comment[] => {
+    const updateCommentsRecursively = (
+        comments: IComment[],
+        updatedComment: IComment,
+        parentId: string,
+    ): IComment[] => {
         return comments.map((prevComment) => {
             if (prevComment._id === parentId) {
                 return { ...prevComment, replies: [...prevComment.replies, updatedComment] };
@@ -71,7 +75,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
         });
     };
 
-    const updateComments = (updatedComment: Comment, parentId: string) => {
+    const updateComments = (updatedComment: IComment, parentId: string) => {
         if (postData) {
             const updatedPost = {
                 ...postData,
@@ -83,28 +87,28 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
     return postData ? (
         <>
             <Modal show={true} onClose={handleClosePostDetail}>
-                <div className="z-40 relative bg-white dark:bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl">
-                    <div className="hidden md:flex flex-1 items-center border-r">
+                <div className='z-40 relative bg-white dark:bg-primary h-[calc(100vh-64px)] w-[calc(100vw-84px)] flex rounded-xl'>
+                    <div className='hidden md:flex flex-1 items-center border-r'>
                         <img
                             src={postData.image_url}
-                            alt=""
-                            loading="lazy"
-                            className="max-w-full max-h-full w-full h-auto object-cover"
+                            alt=''
+                            loading='lazy'
+                            className='max-w-full max-h-full w-full h-auto object-cover'
                         />
                     </div>
-                    <div className="w-full md:w-[400px] h-full pt-5 pb-3 px-4 flex flex-col">
+                    <div className='w-full md:w-[400px] h-full pt-5 pb-3 px-4 flex flex-col'>
                         <PostItem postData={postData} show={false} updatePost={updatePost} isShowImg={false} />
-                        <div className="md:hidden flex items-center -mx-4">
+                        <div className='md:hidden flex items-center -mx-4'>
                             <img
                                 src={postData.image_url}
-                                alt=""
-                                loading="lazy"
-                                className="max-w-full max-h-full w-full h-auto object-cover"
+                                alt=''
+                                loading='lazy'
+                                className='max-w-full max-h-full w-full h-auto object-cover'
                             />
                         </div>
                         {postData.comments.length > 0 ? (
-                            <div className="border-b text-sm border-black/30 dark:border-white/20 py-4 my-3 flex-1 scroll_thin overflow-y-auto">
-                                <div className="flex flex-col ml-8">
+                            <div className='border-b text-sm border-black/30 dark:border-white/20 py-4 my-3 flex-1 scroll_thin overflow-y-auto'>
+                                <div className='flex flex-col ml-8'>
                                     {postData.comments.map((item) => (
                                         <RenderComment
                                             key={item._id}
@@ -117,13 +121,13 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                                 </div>
                             </div>
                         ) : (
-                            <span className="flex-1">No comment</span>
+                            <span className='flex-1'>No comment</span>
                         )}
-                        <div className="border rounded-xl -mx-2 inline-flex items-end border-black/30 dark:border-white/25">
+                        <div className='border rounded-xl -mx-2 inline-flex items-end border-black/30 dark:border-white/25'>
                             <textarea
                                 ref={commentTxtRef}
-                                placeholder="Comments..."
-                                className="w-full max-h-32 py-2 px-2 bg-transparent overflow-hidden outline-none"
+                                placeholder='Comments...'
+                                className='w-full max-h-32 py-2 px-2 bg-transparent overflow-hidden outline-none'
                                 onChange={(e) => {
                                     const textarea = e.target;
                                     if (textarea) {
@@ -132,34 +136,34 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                                     }
                                 }}
                             ></textarea>
-                            <button title="send" className="p-2" onClick={handleCreateComment}>
-                                <BsSend className="text-xl" />
+                            <button title='send' className='p-2' onClick={handleCreateComment}>
+                                <BsSend className='text-xl' />
                             </button>
                         </div>
                     </div>
                     <button
-                        title="Close"
-                        className="text-xl absolute right-1 top-1 cursor-pointer bg-white/10 hover:bg-white/15 rounded-full"
+                        title='Close'
+                        className='text-xl absolute right-1 top-1 cursor-pointer bg-white/10 hover:bg-white/15 rounded-full'
                         onClick={handleClosePostDetail}
                     >
-                        <BsX className="text-4xl" />
+                        <BsX className='text-4xl' />
                     </button>
                 </div>
             </Modal>
             <Modal show={isDiscard} onClose={() => setDiscard(false)}>
-                <div className="z-50">
-                    <div className="bg-primary w-96 text-center text-sm p-4 flex flex-col gap-2 rounded-xl">
-                        <div className="py-4">
-                            <h6 className="text-xl mb-1">Discard post?</h6>
+                <div className='z-50'>
+                    <div className='bg-primary w-96 text-center text-sm p-4 flex flex-col gap-2 rounded-xl'>
+                        <div className='py-4'>
+                            <h6 className='text-xl mb-1'>Discard post?</h6>
                             <span>If you leave, your edits won&apos;t be saved.</span>
                         </div>
                         <button
-                            className="text-red-500 py-3 border-y border-black/30 dark:border-white/20"
+                            className='text-red-500 py-3 border-y border-black/30 dark:border-white/20'
                             onClick={handleDiscardCreate}
                         >
                             Discard
                         </button>
-                        <button className=" pt-1" onClick={() => setDiscard(false)}>
+                        <button className=' pt-1' onClick={() => setDiscard(false)}>
                             Cancel
                         </button>
                     </div>
@@ -172,13 +176,13 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
 export default PostDetail;
 
 const RenderComment: React.FC<{
-    comment: Comment;
+    comment: IComment;
     commentId: string;
     postId: string;
-    updateComments: (updatedComment: Comment, parentId: string) => void;
+    updateComments: (updatedComment: IComment, parentId: string) => void;
 }> = ({ comment, commentId, postId, updateComments }) => {
     const [showAllReplies, setShowAllReplies] = useState(false);
-    const [userComment, setUserComment] = useState<MinimalUser | null>(null);
+    const [userComment, setUserComment] = useState<IMinimalUser | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -209,13 +213,13 @@ const RenderComment: React.FC<{
 };
 
 const RenderItem: React.FC<{
-    user: MinimalUser;
-    comment: Comment;
+    user: IMinimalUser;
+    comment: IComment;
     postId: string;
     commentId: string;
     isShowAll: boolean;
     setShowAll: () => void;
-    updateComments: (updatedComment: Comment, parentId: string) => void;
+    updateComments: (updatedComment: IComment, parentId: string) => void;
 }> = ({ user, comment, commentId, postId, isShowAll, setShowAll, updateComments }) => {
     const router = useRouter();
     const { authUser } = useAuthContextProvider();
@@ -254,18 +258,18 @@ const RenderItem: React.FC<{
         <div className={`flex gap-2 py-1 -ml-8`}>
             <img
                 src={user?.avatar ?? '/user.png'}
-                alt=""
-                className="w-8 min-w-8 h-8 object-cover rounded-full cursor-pointer"
+                alt=''
+                className='w-8 min-w-8 h-8 object-cover rounded-full cursor-pointer'
                 onClick={redirectUserProfile}
             />
-            <div className="flex-1">
-                <div className="dark:bg-white/20 bg-black/5 mr-1 inline-block rounded-2xl px-2 py-1">
-                    <h4 className="font-semibold cursor-pointer hover:underline" onClick={redirectUserProfile}>
+            <div className='flex-1'>
+                <div className='dark:bg-white/20 bg-black/5 mr-1 inline-block rounded-2xl px-2 py-1'>
+                    <h4 className='font-semibold cursor-pointer hover:underline' onClick={redirectUserProfile}>
                         {user?.name}
                     </h4>
-                    <p className="font-light">{comment.comment_text}</p>
+                    <p className='font-light'>{comment.comment_text}</p>
                 </div>
-                <div className="ml-2 text-xs flex gap-3">
+                <div className='ml-2 text-xs flex gap-3'>
                     <span>{timeAgoFromPast(new Date(comment.updatedAt))}</span>
                     <button>like</button>
                     <button
@@ -280,10 +284,10 @@ const RenderItem: React.FC<{
                     </button>
                 </div>
                 {isShow && (
-                    <div className="w-full border rounded-xl inline-flex items-end border-black/30 dark:border-white/25">
+                    <div className='w-full border rounded-xl inline-flex items-end border-black/30 dark:border-white/25'>
                         <textarea
-                            placeholder="Comments..."
-                            className="w-full max-h-20 py-2 px-2 bg-transparent overflow-hidden outline-none"
+                            placeholder='Comments...'
+                            className='w-full max-h-20 py-2 px-2 bg-transparent overflow-hidden outline-none'
                             ref={txtRef}
                             onChange={(e) => {
                                 const textarea = e.target;
@@ -293,8 +297,8 @@ const RenderItem: React.FC<{
                                 }
                             }}
                         ></textarea>
-                        <button title="send" className="p-2" onClick={handleReply}>
-                            <BsSend className="text-xl" />
+                        <button title='send' className='p-2' onClick={handleReply}>
+                            <BsSend className='text-xl' />
                         </button>
                     </div>
                 )}
@@ -311,10 +315,10 @@ const RenderItem: React.FC<{
                                 />
                             ))}
                         {!isShowAll && comment.replies.length > 0 && (
-                            <div className="inline-flex gap-1">
-                                <BsArrowReturnRight className="text-sm" />
+                            <div className='inline-flex gap-1'>
+                                <BsArrowReturnRight className='text-sm' />
                                 <button
-                                    className="text-xs"
+                                    className='text-xs'
                                     onClick={setShowAll}
                                 >{`See all ${comment.replies.length} reply`}</button>
                             </div>

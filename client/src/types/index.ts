@@ -51,11 +51,13 @@ interface IMessage {
 
 interface INotification {
     _id: string;
-    user_id: string;
-    action: string;
-    content?: string;
-    sender: string;
-    read?: boolean;
+    type: 'like' | 'comment' | 'follow' | 'mention' | 'message';
+    senderId: string;
+    receiverId: string;
+    postId?: string | null;
+    commentId?: string | null;
+    message?: string;
+    isRead: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

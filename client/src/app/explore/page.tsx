@@ -2,17 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import { Oval } from 'react-loader-spinner';
 
-import { Post } from '@/types';
+import { IPost } from '@/types';
 import PostTile from '@/components/post/PostTile';
 import PostDetail from '@/components/post/PostDetail';
 import MainLayout from '../MainLayout';
 import { postApi } from '@/api/modules';
 
 const Explore = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
+    const [posts, setPosts] = useState<IPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [fetchingPosts, setFetchingPosts] = useState(false);
-    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
     const [fetchError, setFetchError] = useState(false);
 
     useEffect(() => {
@@ -41,7 +41,7 @@ const Explore = () => {
         }
     };
 
-    const updatePost = async (post: Post) => {
+    const updatePost = async (post: IPost) => {
         setPosts((prev) => prev.map((item) => (item._id === post._id ? post : item)));
     };
 

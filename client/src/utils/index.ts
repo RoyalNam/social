@@ -1,4 +1,4 @@
-import { Comment } from '@/types';
+import { IComment } from '@/types';
 
 export const formatNumber = (number: number) => {
     if (number < 1000) {
@@ -98,7 +98,7 @@ export const timeAgoFromPast = (pastTime: Date) => {
     }
 };
 
-export const countComments = (comments: Comment[]) => {
+export const countComments = (comments: IComment[]) => {
     let count = 0;
     comments.forEach((comment) => {
         count++;

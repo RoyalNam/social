@@ -2,7 +2,7 @@ import privateClient from '../client/private.client';
 
 const messageBaseUrl = '/message';
 const messageEndpoint = {
-    users_chat: `${messageBaseUrl}/`,
+    users_chat: `${messageBaseUrl}/conversations`,
     send_message: ({ receiverId }: { receiverId: string }) => `${messageBaseUrl}/${receiverId}`,
     get_message: ({ userToChatId, lastMessageId }: { userToChatId: string; lastMessageId?: string }) =>
         `${messageBaseUrl}/${userToChatId}?${lastMessageId ? `lastMessageId=${lastMessageId}` : ''}`,

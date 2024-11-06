@@ -20,7 +20,7 @@ import Search from './Search';
 import CreatePost from '../post/CreatePost';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import { useSocketContext } from '@/context/socketContext';
-import { Notification } from '@/types';
+import { INotification } from '@/types';
 import { userApi } from '@/api/modules';
 
 interface NavProps {
@@ -36,7 +36,7 @@ const Navbar = () => {
     const router = useRouter();
     const { authUser } = useAuthContextProvider();
     const { socket } = useSocketContext();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<INotification[]>([]);
     const [isShowSearch, setShowSearch] = useState(false);
     const [isShowNotifications, setShowNotifications] = useState(false);
     const [isShowCreatePost, setShowCreatePost] = useState(false);
@@ -46,7 +46,7 @@ const Navbar = () => {
                 if (authUser) {
                     const notificationData = await userApi.getNotifications(authUser._id);
                     console.log('notifications', notificationData);
-                    setNotifications(notificationData.notifications);
+                    setNotifications(notificationData);
                 }
             } catch (error) {
                 throw error;
@@ -97,19 +97,23 @@ const Navbar = () => {
         {
             tit: 'Notifications',
             icon: (
-                <div className="relative">
+                <div className='relative'>
                     <BsBell />
-                    <span className="absolute -right-0.5 -top-1 z-10 rounded-full text-white bg-red-500 w-3.5 h-3.5 text-xs">
-                        {notifications.filter((item) => !item.read).length}
-                    </span>
+                    {notifications?.length > 0 && (
+                        <span className='absolute -right-0.5 -top-1 z-10 rounded-full text-white bg-red-500 w-3.5 h-3.5 text-xs'>
+                            {notifications.filter((item) => !item.isRead).length}
+                        </span>
+                    )}
                 </div>
             ),
             actIcon: (
-                <div className="relative">
+                <div className='relative'>
                     <BsBellFill />
-                    <span className="absolute -right-0.5 -top-1 z-10 rounded-full text-white bg-red-500 w-3.5 h-3.5 text-xs">
-                        {notifications.filter((item) => !item.read).length}
-                    </span>
+                    {notifications?.length > 0 && (
+                        <span className='absolute -right-0.5 -top-1 z-10 rounded-full text-white bg-red-500 w-3.5 h-3.5 text-xs'>
+                            {notifications.filter((item) => !item.isRead).length}
+                        </span>
+                    )}
                 </div>
             ),
             onclick: () => {
@@ -125,8 +129,8 @@ const Navbar = () => {
         {
             tit: 'Profile',
             to: `/profile/${authUser?._id}`,
-            icon: <img src={authUser?.avatar ?? '/user.png'} alt="" className="rounded-full w-6 h-6" />,
-            actIcon: <img src={authUser?.avatar ?? '/user.png'} alt="" className="rounded-full  w-6 h-6" />,
+            icon: <img src={authUser?.avatar ?? '/user.png'} alt='' className='rounded-full w-6 h-6' />,
+            actIcon: <img src={authUser?.avatar ?? '/user.png'} alt='' className='rounded-full  w-6 h-6' />,
         },
     ];
 
@@ -159,9 +163,9 @@ const Navbar = () => {
                               router.push(item.to as string);
                           }
                 }
-                className="flex gap-2 items-center px-3 py-1 md:py-3 rounded-xl hover:bg-transparent md:hover:bg-black/10 dark:md:hover:bg-white/10"
+                className='flex gap-2 items-center px-3 py-1 md:py-3 rounded-xl hover:bg-transparent md:hover:bg-black/10 dark:md:hover:bg-white/10'
             >
-                <span className="text-2xl">
+                <span className='text-2xl'>
                     {isAct
                         ? item.actIcon
                         : item.tit === 'Notifications' && isShowNotifications
@@ -177,9 +181,9 @@ const Navbar = () => {
     };
 
     const RenderSidebar = ({ children }: { children: React.ReactNode }) => (
-        <div className="fixed inset-x-0 bottom-0 md:left-16 top-[49px] z-20 md:top-0">
-            <div className="absolute inset-0" onClick={handleCloseSidebar} />
-            <div className="md:w-[400px] h-full border-r p-4 border-black/30 dark:border-white/10 min-h-[20vh bg-white dark:bg-primary w-full relative z-40">
+        <div className='fixed inset-x-0 bottom-0 md:left-16 top-[49px] z-20 md:top-0'>
+            <div className='absolute inset-0' onClick={handleCloseSidebar} />
+            <div className='md:w-[400px] h-full border-r p-4 border-black/30 dark:border-white/10 min-h-[20vh bg-white dark:bg-primary w-full relative z-40'>
                 {children}
             </div>
         </div>
@@ -195,31 +199,31 @@ const Navbar = () => {
                     handleCloseSidebar();
                     router.push('/');
                 }}
-                className="hidden md:block mb-6 py-2 cursor-pointer"
+                className='hidden md:block mb-6 py-2 cursor-pointer'
             >
                 <img
-                    src="/logo.png"
-                    alt=""
+                    src='/logo.png'
+                    alt=''
                     className={`object-cover lg:ml-3 w-full max-w-16 rounded-full ${
                         isShowSearch || isShowNotifications ? '!block' : ''
                     }`}
                 />
             </div>
-            <div className="flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2">
+            <div className='flex-1 select-none flex flex-row justify-around md:flex-col gap-0 md:gap-2'>
                 {NAV_LINK.map((item: NavProps) => renderNavItem(item))}
             </div>
             <div
                 onClick={handleLogout}
-                className="hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block"
+                className='hidden rounded-full mt-4 mx-2 p-2 bg-red-400 text-white md:inline-block'
             >
                 <button className={`lg:block hidden ${isShowSearch || isShowNotifications ? '!hidden' : ''}`}>
                     Logout
                 </button>
                 <button
                     className={`block lg:hidden ${isShowSearch || isShowNotifications ? '!block' : ''}`}
-                    title="logout"
+                    title='logout'
                 >
-                    <BsArrowBarLeft className="text-xl" />
+                    <BsArrowBarLeft className='text-xl' />
                 </button>
             </div>
             {isShowSearch && (

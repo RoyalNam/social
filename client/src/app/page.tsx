@@ -2,14 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { Oval } from 'react-loader-spinner';
 
-import { Post } from '@/types';
+import { IPost } from '@/types';
 import PostItem from '@/components/post/PostItem';
 import SuggestedUsers from '@/components/SuggestedUsers';
 import MainLayout from './MainLayout';
 import { postApi } from '@/api/modules';
 
 const Home = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
+    const [posts, setPosts] = useState<IPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [fetchingPosts, setFetchingPosts] = useState(false);
     const [fetchError, setFetchError] = useState(false);
@@ -40,7 +40,7 @@ const Home = () => {
         }
     };
 
-    const updatePost = async (post: Post) => {
+    const updatePost = async (post: IPost) => {
         setPosts((prev) => prev.map((item) => (item._id === post._id ? post : item)));
     };
 

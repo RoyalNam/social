@@ -4,26 +4,26 @@ import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill, BsSend, BsThr
 
 import { countComments, formatNumber, timeAgoFromPast } from '@/utils';
 import Modal from '../Modal';
-import { MinimalUser, Post } from '@/types';
+import { IMinimalUser, IPost } from '@/types';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import PostDetail from './PostDetail';
 import UserListModal from '../UserListModal';
 import { followApi, postApi, userApi } from '@/api/modules';
 
 interface PostItemProps {
-    postData: Post;
+    postData: IPost;
     isShowImg?: boolean;
     show?: boolean;
-    updatePost: (post: Post) => void;
+    updatePost: (post: IPost) => void;
 }
 
 const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = true, updatePost }) => {
     const { authUser, updateAuthUser } = useAuthContextProvider();
     const router = useRouter();
     const [isShowMores, setShowMores] = useState(false);
-    const [usersLike, setUsersLike] = useState<MinimalUser[]>([]);
+    const [usersLike, setUsersLike] = useState<IMinimalUser[]>([]);
     const [isShow, setShow] = useState(false);
-    const [author, setAuthor] = useState<MinimalUser | null>(null);
+    const [author, setAuthor] = useState<IMinimalUser | null>(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -71,14 +71,14 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
                 const isFollowing = authUser.following.includes(author._id);
 
                 const following = isFollowing
-                    ? await followApi.unFollower({ authId: authUser._id, userId: author._id })
-                    : await followApi.followUser({ authId: authUser._id, userId: author._id });
+                    ? await followApi.unFollower({ followingId: author._id })
+                    : await followApi.followUser({ followingId: author._id });
 
                 const updatedUser = { ...authUser };
                 if (following.isFollowing) {
                     updatedUser.following.push(author._id);
                 } else {
-                    updatedUser.following = updatedUser.following.filter((id) => id !== author._id);
+                    updatedUser.following = updatedUser.following.filter((id: any) => id !== author._id);
                 }
 
                 updateAuthUser(updatedUser);
@@ -101,7 +101,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
                 if (isSave.saved) {
                     updatedUser.save_post.push(postData._id);
                 } else {
-                    updatedUser.save_post = updatedUser.save_post.filter((item) => item !== postData._id);
+                    updatedUser.save_post = updatedUser.save_post.filter((item: string) => item !== postData._id);
                 }
 
                 updateAuthUser(updatedUser);
@@ -118,7 +118,7 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
         try {
             const userData = await userApi.getBasicInfoByIds(postData.likes);
             if (userData && userData.length > 0) {
-                setUsersLike(userData.filter((user) => user !== null) as MinimalUser[]);
+                setUsersLike(userData.filter((user) => user !== null) as IMinimalUser[]);
             }
         } catch (err) {
             console.error(err);
@@ -153,37 +153,37 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
 
     const renderUserInfo = (
         <>
-            <div className="flex justify-between items-center">
-                <div className="flex items-start gap-2">
+            <div className='flex justify-between items-center'>
+                <div className='flex items-start gap-2'>
                     <img
                         src={author?.avatar ?? '/user.png'}
-                        alt=""
-                        className="w-12 rounded-full h-12 cursor-pointer"
+                        alt=''
+                        className='w-12 rounded-full h-12 cursor-pointer'
                         onClick={redirectUserProfile}
                     />
-                    <div className="flex flex-col">
-                        <div className="flex gap-4">
-                            <h4 className="hover:underline cursor-pointer font-semibold" onClick={redirectUserProfile}>
+                    <div className='flex flex-col'>
+                        <div className='flex gap-4'>
+                            <h4 className='hover:underline cursor-pointer font-semibold' onClick={redirectUserProfile}>
                                 {author?.name}
                             </h4>
                             {authUser?._id !== author?._id && !authUser?.following.includes(author?._id || '') && (
-                                <button className="text-blue-400 relative font-medium" onClick={handleFollowing}>
+                                <button className='text-blue-400 relative font-medium' onClick={handleFollowing}>
                                     Follow
-                                    <span className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white"></span>
+                                    <span className='absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white'></span>
                                 </button>
                             )}
                         </div>
-                        <span className="text-xs leading-3 opacity-75">
+                        <span className='text-xs leading-3 opacity-75'>
                             {timeAgoFromPast(new Date(postData.createdAt))}
                         </span>
                     </div>
                 </div>
-                <button title="More" className="p-2" onClick={() => setShowMores(true)}>
-                    <BsThreeDots className="text-xl" />
+                <button title='More' className='p-2' onClick={() => setShowMores(true)}>
+                    <BsThreeDots className='text-xl' />
                 </button>
             </div>
             <Modal show={isShowMores} onClose={() => setShowMores(false)}>
-                <div className="text-center flex flex-col w-[400px] rounded-xl z-30 bg-white dark:bg-primary">
+                <div className='text-center flex flex-col w-[400px] rounded-xl z-30 bg-white dark:bg-primary'>
                     {MORES.map((item) =>
                         item.tit === 'Follow' && authUser?._id === author?._id ? null : (
                             <button
@@ -204,60 +204,60 @@ const PostItem: React.FC<PostItemProps> = ({ postData, isShowImg = true, show = 
 
     if (loading && isShowImg)
         return (
-            <div className="border-b border-black/30 dark:border-white/20 py-4 animate-pulse">
-                <div className="flex justify-between items-center animate-pulse">
-                    <div className="flex items-start gap-2">
-                        <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                        <div className="flex flex-col gap-2">
-                            <div className="w-24 h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
-                            <div className="w-16 h-3 bg-gray-300 dark:bg-gray-600 rounded"></div>
+            <div className='border-b border-black/30 dark:border-white/20 py-4 animate-pulse'>
+                <div className='flex justify-between items-center animate-pulse'>
+                    <div className='flex items-start gap-2'>
+                        <div className='w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full'></div>
+                        <div className='flex flex-col gap-2'>
+                            <div className='w-24 h-4 bg-gray-300 dark:bg-gray-600 rounded'></div>
+                            <div className='w-16 h-3 bg-gray-300 dark:bg-gray-600 rounded'></div>
                         </div>
                     </div>
-                    <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                    <div className='w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full'></div>
                 </div>
-                <div className="w-full bg-gray-300 dark:bg-gray-600 rounded h-48 my-2"></div>
-                <div className="bg-gray-300 dark:bg-gray-600 h-5 rounded w-full mb-2"></div>
-                <div className="flex justify-between mt-2">
-                    <div className="flex gap-4">
-                        <div className="h-8 w-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                        <div className="h-8 w-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                <div className='w-full bg-gray-300 dark:bg-gray-600 rounded h-48 my-2'></div>
+                <div className='bg-gray-300 dark:bg-gray-600 h-5 rounded w-full mb-2'></div>
+                <div className='flex justify-between mt-2'>
+                    <div className='flex gap-4'>
+                        <div className='h-8 w-8 bg-gray-300 dark:bg-gray-600 rounded-full'></div>
+                        <div className='h-8 w-8 bg-gray-300 dark:bg-gray-600 rounded-full'></div>
                     </div>
-                    <div className="h-8 w-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                    <div className='h-8 w-8 bg-gray-300 dark:bg-gray-600 rounded-full'></div>
                 </div>
             </div>
         );
 
     return (
         <>
-            <div className="border-b border-black/30 dark:border-white/20 py-4">
+            <div className='border-b border-black/30 dark:border-white/20 py-4'>
                 {renderUserInfo}
-                {isShowImg && <img src={postData.image_url} alt="" loading="lazy" className="w-full max-h my-2" />}
-                <pre className="text-wrap font-sans leading-5">{postData.caption}</pre>
-                <div className="text-2xl flex justify-between mt-2">
-                    <div className="flex gap-4">
+                {isShowImg && <img src={postData.image_url} alt='' loading='lazy' className='w-full max-h my-2' />}
+                <pre className='text-wrap font-sans leading-5'>{postData.caption}</pre>
+                <div className='text-2xl flex justify-between mt-2'>
+                    <div className='flex gap-4'>
                         <button onClick={handleLikePost}>
                             {authUser && postData.likes.includes(authUser._id) ? (
-                                <BsHeartFill className="text-red-600" />
+                                <BsHeartFill className='text-red-600' />
                             ) : (
                                 <BsHeart />
                             )}
                         </button>
                         <span>{formatNumber(postData.likes.length)}</span>
-                        <button title="Comment" onClick={() => setShow(true)}>
+                        <button title='Comment' onClick={() => setShow(true)}>
                             <BsChat />
                         </button>
                         <span>{formatNumber(countComments(postData.comments))}</span>
                     </div>
-                    <button title="Save" onClick={handleSavePost}>
+                    <button title='Save' onClick={handleSavePost}>
                         {authUser?.save_post.includes(postData._id) ? (
-                            <BsBookmarkFill className="text-yellow-500" />
+                            <BsBookmarkFill className='text-yellow-500' />
                         ) : (
                             <BsBookmark />
                         )}
                     </button>
                 </div>
             </div>
-            <UserListModal title="Likes" users={usersLike} onClose={() => setUsersLike([])} />
+            <UserListModal title='Likes' users={usersLike} onClose={() => setUsersLike([])} />
             {isShow && show && (
                 <PostDetail postData={postData} updatePost={updatePost} closePostDetail={() => setShow(false)} />
             )}
