@@ -47,7 +47,7 @@ const Search: React.FC = () => {
     }, [searchValue]);
 
     return (
-        <div className='flex flex-col h-full scroll_thin overflow-y-auto'>
+        <div className='flex flex-col h-full overflow-y-auto'>
             <div className='border-b border-black/30 dark:border-white/20'>
                 <h5 className='text-xl'>Search</h5>
                 <div className='flex items-center gap-2 pl-4 pr-2 border shadow  my-6 rounded-xl'>

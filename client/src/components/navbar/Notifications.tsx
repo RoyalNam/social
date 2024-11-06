@@ -81,7 +81,7 @@ const Notifications = ({ notifications }: { notifications: INotification[] }) =>
     return (
         <div className='h-full'>
             <h5 className='text-xl font-bold'>Notifications</h5>
-            <div className='h-full scroll_thin scroll_thin  overflow-y-auto text-sm my-3'>
+            <div className='h-full overflow-y-auto text-sm my-3'>
                 {notifications?.length > 0 ? (
                     <div className='flex gap-4 flex-col pb-8'>
                         {todayNotifications.length > 0 && (

@@ -107,7 +107,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ postData, updatePost, closePost
                             />
                         </div>
                         {postData.comments.length > 0 ? (
-                            <div className='border-b text-sm border-black/30 dark:border-white/20 py-4 my-3 flex-1 scroll_thin overflow-y-auto'>
+                            <div className='border-b text-sm border-black/30 dark:border-white/20 py-4 my-3 flex-1 overflow-y-auto'>
                                 <div className='flex flex-col ml-8'>
                                     {postData.comments.map((item) => (
                                         <RenderComment

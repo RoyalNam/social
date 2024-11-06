@@ -26,7 +26,7 @@ const UserListModal: React.FC<UserListModalProps> = ({ title, users, onClose }) 
                         <BsX />
                     </button>
                 </div>
-                <div className='flex flex-col h-80 overflow-y-scroll scroll_thin'>
+                <div className='flex flex-col h-80 overflow-y-scroll'>
                     {users &&
                         users.map((item) => (
                             <div

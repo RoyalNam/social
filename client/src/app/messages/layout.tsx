@@ -48,7 +48,7 @@ export default function MessagesLayout({
                 </div>
             ) : (
                 chatUsers.length > 0 && (
-                    <div className='overflow-y-scroll scroll_thin h-full pb-8'>
+                    <div className='overflow-y-scroll h-full pb-8'>
                         <div className='flex flex-col mt-4 items-center lg:items-start'>
                             {chatUsers.map((item, idx) => (
                                 <div
@@ -159,7 +159,7 @@ export default function MessagesLayout({
                         {/* <span onClick={handleSearch}>ENter</span> */}
                     </div>
 
-                    <div className='flex-1 overflow-y-scroll scroll_thin my-3'>
+                    <div className='flex-1 overflow-y-scroll my-3'>
                         <div className='h-full'>
                             {foundUsers.length > 0 ? (
                                 <div className='flex flex-col'>

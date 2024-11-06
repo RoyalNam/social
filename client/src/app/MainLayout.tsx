@@ -46,7 +46,7 @@ const MainLayout: React.FC<{ children: React.ReactNode; fetchData?: () => void }
     return !loading ? (
         <div className='flex h-screen flex-col md:flex-row select-none'>
             <Navbar />
-            <main ref={mainRef} className='flex-1 overflow-y-auto scroll_thin'>
+            <main ref={mainRef} className='flex-1 overflow-y-auto'>
                 <div className='mx-auto max-w-[935px] py-10 px-6 h-full'>{children}</div>
             </main>
         </div>

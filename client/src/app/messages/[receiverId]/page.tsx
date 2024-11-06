@@ -169,7 +169,7 @@ export default function Messages() {
                     </div>
                 </div>
 
-                <div className='flex-1 p-4 overflow-y-scroll scroll_thin' onScroll={handleScroll}>
+                <div className='flex-1 p-4 overflow-y-scroll' onScroll={handleScroll}>
                     <div className='flex flex-col items-center text-center mb-8'>
                         <img
                             src={userToChat.avatar ?? '/user.png'}
@@ -209,7 +209,7 @@ export default function Messages() {
                                 div.style.height = div.scrollHeight + 'px';
                             }
                         }}
-                        className='w-full pl-4 pr-8 py-2 scroll_thin overflow-y-auto max-h-24 bg-transparent outline-none'
+                        className='w-full pl-4 pr-8 py-2 overflow-y-auto max-h-24 bg-transparent outline-none'
                     />
 
                     <button title='send' className='absolute right-2 p-2 bottom-0' onClick={handleSendMessage}>
