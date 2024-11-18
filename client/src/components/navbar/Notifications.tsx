@@ -55,17 +55,21 @@ const Notifications = ({ notifications }: { notifications: INotification[] }) =>
 
     useEffect(() => {}, [activePostId]);
 
-    const renderNotification = (notification: INotification) => {
-        useEffect(() => {
-            fetchUser(notification.senderId);
+    useEffect(() => {
+        notifications.forEach((notification) => {
+            if (!userMap[notification.senderId]) {
+                fetchUser(notification.senderId);
+            }
             if (
                 (notification.type === 'comment' || notification.type === 'like' || notification.type === 'post') &&
                 notification.postId
             ) {
                 fetchPost(notification.postId);
             }
-        }, [notification.senderId, notification.postId, notification.type]);
+        });
+    }, [notifications, userMap]);
 
+    const renderNotification = (notification: INotification) => {
         const user = userMap[notification.senderId];
 
         return (

@@ -62,6 +62,7 @@ class NotificationController {
             if (existingNotification) {
                 if (existingNotification.isRead) {
                     existingNotification.message = notificationMessage;
+                    existingNotification.isRead = false;
                 } else {
                     const messageParts = existingNotification.message.split(' ');
                     const existingCount = parseInt(messageParts[3]) || 1;
