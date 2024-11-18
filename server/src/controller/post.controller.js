@@ -180,6 +180,7 @@ class PostController {
                     type: 'like',
                     senderId: currentUser._id,
                     receiverId: post.user_id,
+                    postId: post._id,
                 });
 
                 const ownerSocketId = getReceiverSocketId(post.user_id);

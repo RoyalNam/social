@@ -1,4 +1,4 @@
-import { Notification } from '../models/index.js';
+import { Notification, User } from '../models/index.js';
 
 class NotificationController {
     static async getNotifications(req, res) {
@@ -15,29 +15,91 @@ class NotificationController {
         const { type, senderId, receiverId, postId, commentId, message } = data || req.body;
 
         try {
-            const notification = new Notification({
-                type,
-                senderId,
-                receiverId,
-                postId,
-                commentId,
-                message,
-                isRead: false,
-            });
+            let notificationMessage = '';
 
-            await notification.save();
+            const sender = await User.findById(senderId).select('name');
+            const senderName = sender ? sender.name : 'Someone';
 
-            if (!data) {
-                res.status(201).json(notification);
+            switch (type) {
+                case 'like':
+                    notificationMessage = `Your post received a new like.`;
+                    break;
+                case 'comment':
+                    notificationMessage = `Your post received a new comment.`;
+                    break;
+                case 'follow':
+                    notificationMessage = `${senderName} started following you.`;
+                    break;
+                case 'mention':
+                    notificationMessage = `You were mentioned in a post.`;
+                    break;
+                case 'message':
+                    notificationMessage = `${senderName} sent you a message.`;
+                    break;
+                case 'post':
+                    notificationMessage = `${senderName} shared a new post.`;
+                    break;
+                default:
+                    notificationMessage = `You have a new notification.`;
+            }
+
+            let existingNotification = null;
+
+            if (type === 'message') {
+                existingNotification = await Notification.findOne({
+                    senderId,
+                    receiverId,
+                    type,
+                });
+            } else if (type === 'like' || type === 'comment') {
+                existingNotification = await Notification.findOne({
+                    receiverId,
+                    type,
+                    postId,
+                });
+            }
+
+            if (existingNotification) {
+                if (existingNotification.isRead) {
+                    existingNotification.message = notificationMessage;
+                } else {
+                    const messageParts = existingNotification.message.split(' ');
+                    const existingCount = parseInt(messageParts[3]) || 1;
+                    const newMessage = `${messageParts[0]} ${messageParts[1]} ${messageParts[2]} ${
+                        existingCount + 1
+                    } new ${type}${existingCount + 1 > 1 ? 's' : ''}.`;
+                    existingNotification.message = newMessage;
+                }
+
+                await existingNotification.save();
+
+                if (res) {
+                    return res.status(200).json(existingNotification);
+                }
+                return existingNotification;
             } else {
+                const notification = new Notification({
+                    type,
+                    senderId,
+                    receiverId,
+                    postId,
+                    commentId,
+                    message: notificationMessage,
+                    isRead: false,
+                });
+                await notification.save();
+
+                if (res) {
+                    return res.status(201).json(notification);
+                }
                 return notification;
             }
         } catch (error) {
-            if (!data) {
+            console.error(error);
+            if (res) {
                 res.status(500).json({ error: 'Error creating notification' });
-            } else {
-                throw error;
             }
+            throw new Error('Error creating notification');
         }
     }
 

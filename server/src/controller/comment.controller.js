@@ -131,7 +131,8 @@ class CommentController {
             const newNotification = await NotificationController.createNotification(null, null, {
                 type: 'comment',
                 senderId: currentUser._id,
-                receiverId: receiverId,
+                // receiverId: receiverId,
+                receiverId: post.user_id,
                 postId: postId,
                 commentId: parentId ? parentId : commentId,
             });

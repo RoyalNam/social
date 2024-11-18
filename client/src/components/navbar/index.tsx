@@ -59,13 +59,20 @@ const Navbar = () => {
         const handleNotification = (newNotification: any) => {
             const sound = new Audio('/notification.mp3');
             sound.play();
-            setNotifications((prev) => [newNotification, ...prev]);
+
+            setNotifications((prev) => {
+                const notificationExists = prev.some((n) => n._id === newNotification._id);
+                if (notificationExists) {
+                    return [newNotification, ...prev.filter((n) => n._id !== newNotification._id)];
+                }
+                return [newNotification, ...prev];
+            });
         };
         socket?.on('newNotification', handleNotification);
         return () => {
             socket?.off('newNotification', handleNotification);
         };
-    }, [socket, setNotifications, notifications]);
+    }, [socket, setNotifications]);
 
     const NAV_LINK: NavProps[] = [
         {

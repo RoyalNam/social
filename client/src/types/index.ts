@@ -51,7 +51,7 @@ interface IMessage {
 
 interface INotification {
     _id: string;
-    type: 'like' | 'comment' | 'follow' | 'mention' | 'message';
+    type: 'like' | 'comment' | 'follow' | 'mention' | 'message' | 'post';
     senderId: string;
     receiverId: string;
     postId?: string | null;
