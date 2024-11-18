@@ -28,23 +28,28 @@ const Notifications = ({ notifications }: { notifications: INotification[] }) =>
     };
 
     const handleClick = async (notification: INotification) => {
-        switch (notification.type) {
-            case 'message':
-                router.push(`/messages/${notification.senderId}`);
-                break;
-            case 'post':
-            case 'comment':
-            case 'like':
-                if (notification.postId) {
-                    setActivePostId(notification.postId);
-                    await fetchPost(notification.postId);
-                }
-                break;
-            case 'follow':
-                router.push(`/profile/${notification.senderId}`);
-                break;
-            default:
-                break;
+        try {
+            const noti = await userApi.markNotificationAsRead(notification._id);
+            switch (notification.type) {
+                case 'message':
+                    router.push(`/messages/${notification.senderId}`);
+                    break;
+                case 'post':
+                case 'comment':
+                case 'like':
+                    if (notification.postId) {
+                        setActivePostId(notification.postId);
+                        await fetchPost(notification.postId);
+                    }
+                    break;
+                case 'follow':
+                    router.push(`/profile/${notification.senderId}`);
+                    break;
+                default:
+                    break;
+            }
+        } catch (error) {
+            console.error('Error marking notification as read', error);
         }
     };
 

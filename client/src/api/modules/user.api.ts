@@ -1,6 +1,7 @@
 import axios from 'axios';
 import publicClient from '../client/public.client';
 import { serverUrl } from '@/configs/config';
+import privateClient from '../client/private.client';
 
 export const userEndpoint = {
     auth: {
@@ -15,6 +16,7 @@ export const userEndpoint = {
     basic_info: ({ id }: { id: string }) => `${userEndpoint.user({ id })}/basic_info`,
     suggested_user: ({ id }: { id: string }) => `${userEndpoint.user({ id })}/suggested_user`,
     notifications: ({ id }: { id: string }) => `${id}/notification`,
+    markNotificationAsRead: ({ notiId }: { notiId: string }) => `/notification/${notiId}/read`,
     search: ({ val }: { val: string }) => `/users?filter=name&value=${val}`,
 };
 const userApi = {
@@ -90,6 +92,10 @@ const userApi = {
     },
     getNotifications: async (id: string) => {
         const resp = await publicClient.get(userEndpoint.notifications({ id }));
+        return resp.data;
+    },
+    markNotificationAsRead: async (notiId: string) => {
+        const resp = await privateClient.patch(userEndpoint.markNotificationAsRead({ notiId }));
         return resp.data;
     },
     searchUsers: async (val: string) => {

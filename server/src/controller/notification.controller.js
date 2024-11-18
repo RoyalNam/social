@@ -4,7 +4,7 @@ class NotificationController {
     static async getNotifications(req, res) {
         try {
             const { userId } = req.params;
-            const notifications = await Notification.find({ receiverId: userId }).sort({ createdAt: -1 });
+            const notifications = await Notification.find({ receiverId: userId }).sort({ updatedAt: -1 });
             res.status(200).json(notifications);
         } catch (error) {
             res.status(500).json({ error: 'Error fetching notifications' });
@@ -111,10 +111,8 @@ class NotificationController {
             if (!notification) {
                 return res.status(404).json({ error: 'Notification not found' });
             }
-
             notification.isRead = true;
-            notification.updatedAt = new Date();
-            await notification.save();
+            await notification.save({ timestamps: false });
 
             res.status(200).json(notification);
         } catch (error) {
@@ -125,10 +123,7 @@ class NotificationController {
     static async markAllAsRead(req, res) {
         try {
             const { userId } = req.params;
-            await Notification.updateMany(
-                { receiverId: userId, isRead: false },
-                { $set: { isRead: true, updatedAt: new Date() } },
-            );
+            await Notification.updateMany({ receiverId: userId, isRead: false }, { $set: { isRead: true } });
             res.status(200).json({ message: 'All notifications marked as read' });
         } catch (error) {
             res.status(500).json({ error: 'Error updating all notifications' });
