@@ -13,7 +13,7 @@ passport.use(
         {
             clientID: config.googleClientId,
             clientSecret: config.googleClientSecret,
-            callbackURL: '/auth/google/callback',
+            callbackURL: '/api/auth/google/callback',
             scope: ['profile', 'email'],
         },
         async function (accessToken, refreshToken, profile, cb) {
@@ -52,7 +52,7 @@ passport.use(
         {
             clientID: config.facebookClientId,
             clientSecret: config.facebookClientSecret,
-            callbackURL: '/auth/facebook/callback',
+            callbackURL: '/api/auth/facebook/callback',
             scope: ['email'],
         },
         async function (accessToken, refreshToken, profile, cb) {

@@ -75,7 +75,7 @@ class AuthController {
     static handleOAuthCallback(provider) {
         return (req, res, next) => {
             passport.authenticate(provider, {
-                failureRedirect: '/auth/login/failed',
+                failureRedirect: '/api/auth/login/failed',
                 session: false,
             })(req, res, (err) => {
                 if (err) {
