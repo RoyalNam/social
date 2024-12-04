@@ -6,7 +6,6 @@ import Link from 'next/link';
 import userApi, { userEndpoint } from '@/api/modules/user.api';
 import { useAuthContextProvider } from '@/context/authUserContext';
 import InputCus from '@/components/InputCus';
-import { serverUrl } from '@/configs/config';
 
 const LoginPage = () => {
     return (
@@ -15,6 +14,7 @@ const LoginPage = () => {
         </Suspense>
     );
 };
+
 const Login = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -27,30 +27,44 @@ const Login = () => {
     const [formData, setFormData] = useState(initialData);
 
     useEffect(() => {
-        handleLogin();
-    }, []);
+        const storedToken = localStorage.getItem('authToken');
+        if (storedToken) {
+            handleLogin(storedToken);
+        } else {
+            const searchToken = searchParams.get('token');
+            if (searchToken) {
+                localStorage.setItem('authToken', searchToken);
+                handleLogin(searchToken);
+            }
+        }
+    }, [searchParams]);
 
-    const handleLogin = async () => {
-        const searchToken = searchParams.get('token');
-        if (searchToken) {
-            localStorage.setItem('authToken', searchToken);
-            const userRes = await userApi.loginSuccess(searchToken);
+    const handleLogin = async (token: string) => {
+        try {
+            const userRes = await userApi.loginSuccess(token);
             if (userRes) {
                 console.log('User logged in:', userRes);
                 updateAuthUser(userRes.data.user);
                 router.push('/');
             }
+        } catch (error) {
+            console.error('Login failed:', error);
+            setErr(true);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const userData = await userApi.loginLocal(formData);
-
-        if (userData) {
-            updateAuthUser(userData.user);
-            router.push('/');
-        } else {
+        try {
+            const userData = await userApi.loginLocal(formData);
+            if (userData) {
+                updateAuthUser(userData.user);
+                router.push('/');
+            } else {
+                setErr(true);
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
             setErr(true);
         }
     };
@@ -66,6 +80,7 @@ const Login = () => {
     const redirectToRegister = () => {
         router.push('/account/register');
     };
+
     return (
         <div className='flex flex-col gap-4'>
             <div className='flex items-center flex-col gap-4'>
