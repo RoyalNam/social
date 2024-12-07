@@ -24,5 +24,5 @@ export const config = {
     cookieSecret: process.env.COOKIE_SECRET,
     sessionSecret: process.env.SESSION_SECRET,
     nodeEnv: process.env.NODE_ENV,
-    host: process.env.HOST,
+    serverUrl: process.env.SERVER_URL,
 };

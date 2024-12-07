@@ -7,13 +7,14 @@ import { User } from '../models/index.js';
 import { config } from './config.js';
 
 const JWT_SECRET = config.jwtSecret;
+const SERVER_URL = config.serverUrl
 passport.use(
     'google',
     new GoogleStrategy(
         {
             clientID: config.googleClientId,
             clientSecret: config.googleClientSecret,
-            callbackURL: '/api/auth/google/callback',
+            callbackURL: `${SERVER_URL}/api/auth/google/callback`,
             scope: ['profile', 'email'],
         },
         async function (accessToken, refreshToken, profile, cb) {
@@ -52,7 +53,7 @@ passport.use(
         {
             clientID: config.facebookClientId,
             clientSecret: config.facebookClientSecret,
-            callbackURL: '/api/auth/facebook/callback',
+            callbackURL: `${SERVER_URL}/api/auth/facebook/callback`,
             scope: ['email'],
         },
         async function (accessToken, refreshToken, profile, cb) {

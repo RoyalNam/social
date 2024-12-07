@@ -270,7 +270,7 @@ const RenderItem: React.FC<{
                     <p className='font-light'>{comment.comment_text}</p>
                 </div>
                 <div className='ml-2 text-xs flex gap-3'>
-                    <span>{timeAgoFromPast(new Date(comment.updatedAt))}</span>
+                    <span>{timeAgoFromPast(new Date(comment.createdAt))}</span>
                     <button>like</button>
                     <button
                         onClick={() => {

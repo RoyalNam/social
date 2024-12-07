@@ -66,9 +66,6 @@ if (config.nodeEnv === 'production') {
     app.set('trust proxy', 1);
 }
 
-const protocol = config.nodeEnv === 'production' ? 'https' : 'http';
-const host = config.host || 'localhost';
-
 server.listen(port, () => {
-    console.log(`Server running on ${protocol}://${host}:${port}`);
+    console.log(`Server running on ${config.serverUrl}`);
 });
