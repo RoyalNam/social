@@ -23,12 +23,14 @@ const userApi = {
     loginLocal: async (formData: { email: string; password: string }) => {
         try {
             const response = await publicClient.post(userEndpoint.auth.local, formData);
-            if (response && response.data && response.data.token) {
+            if (response?.data?.token) {
                 const userRes = await userApi.loginSuccess(response.data.token);
-                return userRes.data;
-            } else {
-                return { success: false };
+                if (userRes?.data) {
+                    return { success: true, user: userRes.data };
+                }
             }
+            console.error('Invalid response structure or missing token.');
+            return { success: false };
         } catch (error) {
             console.error('Error logging in locally:', error);
             return { success: false, error };

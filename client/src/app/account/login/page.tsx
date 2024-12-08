@@ -57,10 +57,11 @@ const Login = () => {
         e.preventDefault();
         try {
             const userData = await userApi.loginLocal(formData);
-            if (userData) {
+            if (userData && userData.success) {
                 updateAuthUser(userData.user);
                 router.push('/');
             } else {
+                console.error('Login failed: Invalid credentials or response.');
                 setErr(true);
             }
         } catch (error) {
