@@ -58,7 +58,7 @@ const Login = () => {
         try {
             const userData = await userApi.loginLocal(formData);
             if (userData && userData.success) {
-                updateAuthUser(userData.user);
+                updateAuthUser(userData.user.user);
                 router.push('/');
             } else {
                 console.error('Login failed: Invalid credentials or response.');
